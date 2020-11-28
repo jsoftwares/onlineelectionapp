@@ -17,3 +17,14 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+
+// Route::apiResource('poll', API\PollController::class);
+Route::post('/event/attendees', 'API\AttendeeController@eventAttendees');
+Route::post('/polls/votes', 'API\PollController@pollsvotes');
+Route::apiResources([
+    'poll' => API\PollController::class,
+    'candidate' => API\CandidateController::class,
+    'attendee' => API\AttendeeController::class,
+    'vote' => API\VoteController::class,
+]);
