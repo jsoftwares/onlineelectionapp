@@ -13,8 +13,13 @@ class Vote extends Model
         return $this->belongsTo(Event::class);
     }
 
-    public function canditate()
+    public function candidate()
     {
         return $this->belongsTo(Candidate::class);
+    }
+
+    public function attendee()
+    {
+        return $this->belongsTo(Attendee::class);
     }
 }

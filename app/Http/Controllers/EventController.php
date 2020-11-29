@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\Event as ResourcesEvent;
+use App\Jobs\SendTokenViaSMS;
 use App\Models\Company;
 use App\Models\Event;
 use App\Models\Poll;
@@ -41,15 +43,15 @@ class EventController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'uid' => 'required|unique:events',
+            // 'uid' => 'required|unique:events',
             'title' => 'required|string|max:100',
             'short_title' => 'required|string|max:11',
             'company_id' => 'required|numeric',
-            'venue' => 'string|max:100'
+            'venue' => 'nullable|string|max:100'
         ]);
 
         $event = new Event;
-        $event->uid = uniqid(true).time();uniqid(true).time();
+        $event->uid = uniqid(true).time();
         $event->title =  strtoupper($request->title);
         $event->status =  0;
         $event->short_title =  strtoupper($request->short_title);
@@ -72,9 +74,8 @@ class EventController extends Controller
      */
     public function show($id)
     {
-        $event = Event::whereId($id)->first();
-        $event = $event->with('company:id,name', 'polls')->get();
-        // dd($event);
+        $event = Event::find($id);
+        $event = new ResourcesEvent($event);
         return view('event.show')->with(['event'=>$event]);
     }
 
@@ -121,13 +122,43 @@ class EventController extends Controller
     }
 
 
-    public function onlinePoll($event_uid)
+    public function GenDispToken(Request $request)
     {
+        $request->validate([
+            'event_id' => 'required|numeric'
+        ]);
+        // try {
+            $event = Event::find($request->event_id);
+            if ($event != null) {
+                $event->attendees()
+                ->where([
+                    ['mobile', '!=', null],
+                    ['token', '=', null]
+                ])->chunk(1000, function($attendees){
+                    if ($attendees != null) {
+                        $this->dispatch(new SendTokenViaSMS($attendees)); 
+
+                        // return redirect()->back()->with(['status'=>'SMS Job queued for delivery.']);
+                    }else {
+                        # No attendee to send token
+                    }
+                });
+            }else{
+                // Your operation failed.
+            }
+        // } catch (\Throwable $th) {
+            //throw $th;
+        // }
+    }
+
+
+    public function onlinePoll($id)
+    {
+
         // $event = Event::where('uid', $event_uid)->first();
-        $event = Event::find($event_uid);
+        $event = Event::find($id);
         if ($event && $event->status == 1) {
-            $event = $event->with('polls')->get();
-            // dd($event);
+            $event = new ResourcesEvent($event);
             return view('event.online_poll')->with(['event' => $event]);
         }
         else {

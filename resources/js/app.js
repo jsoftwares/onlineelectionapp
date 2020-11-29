@@ -22,6 +22,7 @@ window.Vue = require('vue');
 Vue.component('manage-company', require('./components/ManageCompany.vue').default);
 Vue.component('manage-event', require('./components/ManageEvent.vue').default);
 Vue.component('event-details', require('./components/EventDetails.vue').default);
+Vue.component('poll-details', require('./components/PollDetails.vue').default);
 Vue.component('online-poll', require('./components/OnlinePoll.vue').default);
 Vue.component('result-screen', require('./components/ResultScreen.vue').default);
 

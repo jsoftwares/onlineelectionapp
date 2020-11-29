@@ -17,15 +17,28 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
+
 Auth::routes();
+
+// Find attendee and also generate vote session.
+Route::post('/attendee/login', 'AttendeeController@findAttendeeByToken');
+Route::post('/attendee/logout', 'AttendeeController@endSession');
+Route::get('/event/decide-online/{event_id}', 'EventController@onlinePoll')->name('vote_online');
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-// COMPANY
+Route::group(['middleware'=> 'auth'], function(){
+    // COMPANY
 Route::resource('company', 'CompanyController');
 
 // EVENT
 Route::get('/getevent/{id}', 'EventController@getEvent');
-Route::get('/event/decide-online/{event}', 'EventController@onlinePoll');
+
+Route::post('/event/sendtoken', 'EventController@GenDispToken');
 Route::get('/event/pollscreen/{event}', 'EventController@pollscreen');
 Route::resource('event', 'EventController');
+
+Route::resource('poll', 'PollController');
+});
+

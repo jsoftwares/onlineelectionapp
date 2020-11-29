@@ -38,7 +38,7 @@
                         <tbody>
                             <tr v-for="(event, index) in allEvents" :key='index'>
                                 <td>{{index + 1}}</td>
-                                <td class='font-weight-bold'><a :href="'event/'+event.id">{{event.title}}</a></td>
+                                <td class='font-weight-bold'><a :href="'/event/'+event.id">{{event.title}}</a></td>
                                 <td>{{event.status === 0 ? 'CLOSE' : 'OPEN'}}</td>
                                 <td>{{event.company.short_name}}</td>
                                 <td>{{event.user_id}}</td>

@@ -22,6 +22,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 // Route::apiResource('poll', API\PollController::class);
 Route::post('/event/attendees', 'API\AttendeeController@eventAttendees');
 Route::post('/polls/votes', 'API\PollController@pollsvotes');
+Route::post('/polls/declare-winner', 'API\PollController@declarewinner');
+Route::post('/attendee/import', 'API\AttendeeController@import');
 Route::apiResources([
     'poll' => API\PollController::class,
     'candidate' => API\CandidateController::class,

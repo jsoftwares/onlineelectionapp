@@ -1,8 +1,8 @@
 <template>
-    <div class="container" style="font-family:'century gothic'">
+    <div class="container-fluid" style="font-family:'century gothic'">
         <!-- LOGIN AREA -->
         <div class="row justify-content-center mb-5" v-show="!grantAccess">
-            <div class="col-md-6 col-sm-6">
+            <div class="col-md-8 col-sm-8">
 
                 <!-- Notification -->
                 <transition name="fade">
@@ -21,7 +21,7 @@
                             <input type="text" class="form-control" v-model="token" autofocus>
                         </div>
                         <div class="form-group">
-                            <button @click="authenticateAttendee" class="btn btn-block btn-primary font-weight-bold text-white">Continue...</button>
+                            <button @click="accessChecker" class="btn btn-block btn-primary font-weight-bold text-white">Continue...</button>
                         </div>
                     </div>
                 </div>
@@ -40,7 +40,7 @@
                 <li class="list-group-item">
                     <strong class="mr-4">WELCOME: {{this.attendee.name}}</strong> || 
                     <strong class="mr-4 ml-4">MOBILE: {{this.attendee.mobile}}</strong> || 
-                    <strong class="ml-4">HOLDINGS: {{this.attendee.email}} </strong>
+                    <strong class="ml-4">EMAIL: {{this.attendee.email}} </strong>
                 </li>
             </ul>
         </div>
@@ -83,7 +83,7 @@
                                 </div>
                                 </div>
                             </div>
-                            <div class="card" v-for="(poll, index) in event[0].polls" :key="index">
+                            <div class="card" v-for="(poll, index) in event.polls" :key="index">
                                 <div class="card-header" id="headingOne">
                                     <h5 class="mb-0">
                                         <button class="btn btn-link" data-toggle="collapse" v-bind:data-target="'#collapse'+poll.id" aria-expanded="true" aria-controls="collapseOne">
@@ -155,23 +155,28 @@ export default {
     
     props: ['event'],
 
-    mounted()
-    {
-        console.log(this.baseURL);
+    mounted() {
+        console.log(this.event.id);
+        if (localStorage.exchange_confd) {
+            this.token = localStorage.exchange_confd.split('_')[1];
+            this.accessChecker();   
+        }
     },
 
     data()
     {
         return {
-            'attendee': {'id':2},
+            'attendee': {},
             'token': '',
-            'grantAccess': true,
+            'onlineEntries': '',
+            'grantAccess': false,
             'showPoll': true,
             'message': '',
             'flashAlert': false,
             'alertType': '',
             'questionAlert': '',
-            'baseURL': process.env.MIX_APP_URL
+            'baseURL': process.env.MIX_APP_URL,
+            'lsKey': 'conf'+this.event.uid
         }
     },
 
@@ -206,7 +211,74 @@ export default {
 
         authenticateAttendee(){},
 
-        question(){}
+        question(){},
+        accessChecker(){
+
+            if (this.token != '') {
+                axios.post('/attendee/login', {
+                    'event_id':this.event.id, 
+                    'token':this.token
+                })
+                .then(response=>{
+
+                    if (response.data.status == 200) {
+                        this.attendee = response.data.attendee;
+                        this.onlineEntries = response.data.attendee.onlineSessionKey;
+                        if (this.onlineEntries != '') {
+                            localStorage.exchange_confd = this.onlineEntries;
+                            this.grantAccess = true;
+                            //store data in local storage and in Cache
+                            // const userKey = this.attendee.uid+'_'+this.attendee.token; exchange_confd15fbcd0b21e634
+                            
+                            // STORE KEY
+                            // HTTP.post('/api/v1/attendee/create-session', {
+                            //     'key': userKey,
+                            //     'attendee_id': this.attendee.id,
+                            //     'token': this.attendee.token,
+
+                            // }).then( response => {
+                            //     localStorage.configx = userKey;
+                            //     this.onlinekey = response.data.key;
+                            //     this.grantAccess = true;
+                                
+                            // }).catch(err => console.log(err));
+                            
+                        }else{
+                            if (this.onlineEntries == localStorage.exchange_confd) {
+                                this.grantAccess = true;
+                            }else{
+                                this.grantAccess = false;
+                            this.showAlert('Oops! you can only login from one device, logout from other device inorder to login here.', 'alert-danger', 8000);
+                            }
+                        }
+                    }else if(response.data.status == 409){
+                        this.showAlert(response.data.message, 'alert-danger', 10000);
+                    }else{
+                        this.showAlert(response.data.message, 'alert-danger', 10000);
+                    }
+                    
+                }).catch( err=> console.log(err))
+                
+            }else{
+                this.showAlert('Please enter your token to continue.', 'alert-danger', 10000);
+            }
+                
+            },
+
+            logout(){
+                axios.post('/attendee/logout', {
+                    'attendee': this.attendee.id,
+                    'event_id': this.event.id
+                })
+                .then(()=>{
+                    localStorage.removeItem('exchange_confd');
+                    
+                    this.grantAccess = false;
+                    this.attendee = null;
+                    location.reload();
+                })
+            },
+            
     }
 }
 </script>

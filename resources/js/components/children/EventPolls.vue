@@ -81,3 +81,8 @@ export default {
 
         addCandidate(poll) {
             this.$emit('addNewCandidate', (poll));
+        }
+    }
+
+}
+</script>

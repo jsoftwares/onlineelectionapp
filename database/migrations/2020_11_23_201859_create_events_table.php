@@ -19,6 +19,7 @@ class CreateEventsTable extends Migration
             $table->string('title', 100);
             $table->string('short_title', 40);
             $table->tinyInteger('status')->default(0);
+            $table->string('vote_online');
             $table->string('venue')->nullable();
             $table->foreignId('company_id')->constrained()->onDelete('cascade');
             $table->softDeletes('deleted_at', 0);

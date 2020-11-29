@@ -21,6 +21,8 @@ class CreateCandidatesTable extends Migration
             $table->string('photo')->nullable();
             $table->string('email', 90)->nullable();
             $table->string('mobile', 15)->nullable();
+            $table->tinyInteger('won')->nullable();
+            $table->tinyInteger('via')->nullable();
             $table->string('misc', 70)->nullable();
             $table->string('misc1', 70)->nullable();
             $table->string('misc2', 70)->nullable();

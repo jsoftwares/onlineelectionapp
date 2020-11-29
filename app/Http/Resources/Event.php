@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class Poll extends JsonResource
+class Event extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -20,10 +20,8 @@ class Poll extends JsonResource
             'title' => $this->title,
             'short_title' => $this->short_title,
             'status' => $this->status,
-            'photo' => $this->photo,
-            'event_id' => $this->event_id,
-            'candidates' => Candidate::collection($this->candidates),
-            'votes' => Vote::collection($this->votes)
+            'company' => $this->company,
+            'polls' => $this->polls,
         ];
     }
 }

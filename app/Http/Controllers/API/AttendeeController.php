@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\ImportAttendees;
 use App\Models\Attendee;
 use App\Models\Event;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class AttendeeController extends Controller
 {
@@ -41,14 +43,15 @@ class AttendeeController extends Controller
             'misc5' => 'max:60'
         ]);
 
-        $token = $this->generateToken();
+        // $token = $this->generateToken();
+        $uid = uniqid(true) .time();
 
         $attendee = new Attendee;
-        // $attendee->uid = uniqid(true).time();
+        $attendee->uid = $uid;
         $attendee->name = strtoupper($request->name);
         $attendee->email = strtolower($request->email);
         $attendee->mobile = $this->addCountryCodeToGSM($request->mobile);
-        $attendee->token = $token;
+        // $attendee->token = $token;
         $attendee->misc = $request->misc;
         $attendee->misc1 = $request->misc1;
         $attendee->misc2 = $request->misc2;
@@ -103,6 +106,44 @@ class AttendeeController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file',
+            'event_id' => 'required|numeric'
+        ]);
+
+        // dd($request->file);
+
+        if ($event = Event::find($request->event_id)) {
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+                $filename = Str::slug($event->short_title) . '_' . time() . '.'. $file->getClientOriginalExtension();
+                $file->storeAs('public/data_upload', $filename);
+
+                ImportAttendees::dispatch($filename, $event->id);
+
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Import has been sent to Queue.'
+                ], 200);
+            }else {
+                return response()->json([
+                    'status' => 500,
+                    'message' => 'Import Failed. Something was wrong with the file.'
+                ], 500);
+            }
+            
+        }else {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Import Failed. Something went wrong.'
+            ], 500);
+        }
+            
+
     }
 
 

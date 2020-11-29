@@ -10,7 +10,7 @@
     </div>
 
     <div class="container-fluid">
-            <h4>{{currentEvent.title}}</h4>
+            <h4>{{event.title}}</h4>
     <!-- Nav tabs -->
         <ul class="nav nav-tabs mt-4">
             <li class="nav-item">
@@ -24,10 +24,10 @@
     <!-- Tab panes -->
         <div class="tab-content">
             <div class="tab-pane active" id="polls">
-                <event-polls :polls="eventPolls" :eventId="currentEvent.id"></event-polls>
+                <event-polls :polls="event.polls" :eventId="event.id"></event-polls>
             </div>
             <div class="tab-pane  fade" id="attendees">
-                <event-attendees :eventId="currentEvent.id"></event-attendees>
+                <event-attendees :eventId="event.id"></event-attendees>
             </div>
         </div>
 
@@ -52,6 +52,9 @@ export default {
         this.$on('attendeeCreated', () => {
             this.showAlert('Attendee created successfully.', 4000);
         });
+        this.$on('importQueued', (result) => {
+            this.showAlert(result.messagge, 5000);
+        });
     },
 
     components: {
@@ -61,8 +64,6 @@ export default {
 
     data() {
         return {
-            currentEvent: this.event[0],
-            eventPolls: this.event[0].polls,
             message:'',
             showMessage: false
         }

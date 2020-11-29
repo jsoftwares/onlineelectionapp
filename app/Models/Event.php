@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
+    protected $fillable = ['vote_online'];
     protected $dates = ['deleted_at'];
 
     public function company()
@@ -26,5 +27,13 @@ class Event extends Model
     public function attendees()
     {
         return $this->hasMany(Attendee::class);
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::created(function($event){
+            $event->update(['vote_online' => route('vote_online', $event->id)]);
+        });
     }
 }

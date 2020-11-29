@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\Poll as ResourcesPoll;
+use App\Models\Poll;
 use Illuminate\Http\Request;
 
 class PollController extends Controller
@@ -45,7 +47,11 @@ class PollController extends Controller
      */
     public function show($id)
     {
-        //
+        $poll = Poll::find($id);
+        if ($poll) {
+            // dd($poll);
+            return view('poll.show')->with(['poll'=> new ResourcesPoll($poll)]);
+        }
     }
 
     /**

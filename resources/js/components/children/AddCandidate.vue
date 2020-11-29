@@ -165,6 +165,7 @@ export default {
     
     mounted() {
         this.$parent.$on('addNewCandidate', (poll) => {
+            console.log(poll);
             this.editing = false;
             this.poll = poll;
             this.candidate = new Candidate({});

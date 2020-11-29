@@ -28,7 +28,7 @@ class PollController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'uid' => 'required|unique:polls,uid',
+            // 'uid' => 'required|unique:polls,uid',
             'title' => 'required|max:100',
             'short_title' => 'required|max:11',
             'event_id' => 'required|numeric',
@@ -97,10 +97,55 @@ class PollController extends Controller
         //
     }
 
-
+    // Return collection of polls data with relationship & distant relationships
     public function pollsvotes()
     {
         $polls = Poll::all();
         return ResourcesPoll::collection($polls);
+    }
+
+    // Return single poll data with relationship & distant relationships
+    public function pollData(Request $request)
+    {
+        $poll = Poll::find($request->poll);
+        return new ResourcesPoll($poll);
+    }
+
+    public function declarewinner(Request $request)
+    {
+        $request->validate([
+            'candidate' => 'required',
+            'poll_id' => 'required'
+        ]);
+
+        $poll = Poll::find($request->poll_id);
+        if ($poll) {
+            foreach ($poll->candidates as $key => $candidate) {
+                if ($candidate->winner == 1) {
+                    $candidate->update(['won'=> 0, 'via'=>'NULL']);
+                }
+            }
+            $get_winner = $poll->candidates->whereId($request->candidate)->first();
+            if ($get_winner) {
+                $declare_winner = $get_winner->update([
+                    'won' => 1,
+                    'via' => $request->via
+                ]);
+
+                if ($declare_winner) {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => $get_winner +' has been delcared as winner.',
+                        'data' => $poll->candidates
+                    ],200);
+                }else {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Your action failed. Winner not decalred'
+                    ],200);
+                }
+            }
+            
+        }
     }
 }
