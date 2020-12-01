@@ -38,23 +38,23 @@
             
             <ul class="list-group justify-content-center col-md-12 col-sm-12">
                 <li class="list-group-item">
-                    <strong class="mr-4">WELCOME: {{this.attendee.name}}</strong> || 
-                    <strong class="mr-4 ml-4">MOBILE: {{this.attendee.mobile}}</strong> || 
-                    <strong class="ml-4">EMAIL: {{this.attendee.email}} </strong>
+                    <strong class="mr-4">WELCOME: {{attendee.name}}</strong> || 
+                    <strong class="mr-4 ml-4">MOBILE: {{attendee.mobile}}</strong> || 
+                    <strong class="ml-4">EMAIL: {{attendee.email}} </strong>
                 </li>
             </ul>
         </div>
 
         <!-- POLL Area -->
         <div class="row justify-content-center" v-show="grantAccess">
-            <!-- Poll Area -->
+            <!-- Poll Area Start-->
             <div class="col-md-12 col-sm-12" v-if="showPoll">
                 <!-- Notification -->
                 <!-- <transition name="fade"> -->
-                    <div v-show="flashAlert" class="alert alert-success alert-dismisable fade show" role="alert">
+                    <!-- <div v-show="flashAlert" class="alert alert-success alert-dismisable fade show" role="alert">
                         <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                         <strong>{{this.message}}</strong>
-                    </div>
+                    </div> -->
                 <!-- </transition> -->
 
                 <div class="card card-default">
@@ -75,7 +75,7 @@
                                     </h5>
                                 </div>
                                 <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordion">
-                                <div class="card-body">
+                                <div class="card-body font-weight-bold">
                                    <p>Kindy click the title of each poll below to see its candidates, then click the <strong>"CAST VOTE"</strong> button next to your candidate of choice
                                         to cast your vote for that candidate. Note that you can only vote for one candidate per poll, clicking another button within
                                         the same poll will change your previous vote.
@@ -93,14 +93,12 @@
                                 </div>
 
                                 <div v-bind:id="'collapse'+poll.id" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
-                                    
-                                    <div class="card-header text-white" v-show="flashAlert">
-                                        <!-- <div v-show="flashAlert" :class="'alert alert-dismisable fade show '+alertType" role="alert">
-                                            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                            <strong>{{this.message}}</strong>
-                                        </div> -->
-                                    </div>
 
+                                    <div v-show="flashAlert" :class="alertType+ ' col-md-10 alert alert-dismisable fade show'" role="alert">
+                                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                                        <strong>{{message}}</strong>
+                                    </div>
+                            
                                     <div class="card-body row">
                                         <!-- Candidates Start-->
                                                 <div class="media mb-4 mr-4" v-for="(candidate, index) in poll.candidates" :key="index">
@@ -156,10 +154,9 @@ export default {
     props: ['event'],
 
     mounted() {
-        console.log(this.event.id);
         if (localStorage.exchange_confd) {
             this.token = localStorage.exchange_confd.split('_')[1];
-            this.accessChecker();   
+            this.accessChecker();
         }
     },
 
@@ -186,14 +183,17 @@ export default {
             axios.post('/api/vote', {
                 'poll_uid': poll.uid,
                 'candidate': candidateId,
-                'attendee_id': this.attendee.id
+                'applc': this.attendee.uid,
+                'misc': this.event.uid+'_'+this.event.id
             })
             .then( response => {
                 if (response.data.status === 200) {
-                    this.showAlert(response.data.message, 'alert-success', 3000);
+                    this.alertType = 'alert-success';
+                    this.showAlert(response.data.message, this.alertType, 5000);
                 }
                 else{
-                    this.showAlert(response.data.message, 'alert-danger', 3000);
+                    this.alertType = 'alert-danger';
+                    this.showAlert(response.data.message, this.alertType, 5000);
                 }
             }).catch( err => console.log('Something went wrong'));
         },

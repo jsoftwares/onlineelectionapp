@@ -1944,8 +1944,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['event'],
   mounted: function mounted() {
@@ -2108,6 +2106,10 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
 //
 //
 //
@@ -2363,13 +2365,9 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['event'],
   mounted: function mounted() {
-    console.log(this.event.id);
-
     if (localStorage.exchange_confd) {
       this.token = localStorage.exchange_confd.split('_')[1];
       this.accessChecker();
@@ -2397,12 +2395,17 @@ __webpack_require__.r(__webpack_exports__);
       axios.post('/api/vote', {
         'poll_uid': poll.uid,
         'candidate': candidateId,
-        'attendee_id': this.attendee.id
+        'applc': this.attendee.uid,
+        'misc': this.event.uid + '_' + this.event.id
       }).then(function (response) {
         if (response.data.status === 200) {
-          _this.showAlert(response.data.message, 'alert-success', 3000);
+          _this.alertType = 'alert-success';
+
+          _this.showAlert(response.data.message, _this.alertType, 5000);
         } else {
-          _this.showAlert(response.data.message, 'alert-danger', 3000);
+          _this.alertType = 'alert-danger';
+
+          _this.showAlert(response.data.message, _this.alertType, 5000);
         }
       })["catch"](function (err) {
         return console.log('Something went wrong');
@@ -39797,19 +39800,6 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c(
-      "button",
-      {
-        staticClass: "btn btn-sm btn-primary mb-2",
-        on: {
-          click: function($event) {
-            return _vm.createPoll()
-          }
-        }
-      },
-      [_vm._v("New Poll")]
-    ),
-    _vm._v(" "),
     _c("div", { staticClass: "clearfix" }),
     _vm._v(" "),
     _c(
@@ -39840,9 +39830,7 @@ var render = function() {
       ]
     ),
     _vm._v(" "),
-    _c("div", { staticClass: "container-fluid" }, [
-      _c("h4", [_vm._v(_vm._s(_vm.event.title))]),
-      _vm._v(" "),
+    _c("div", {}, [
       _vm._m(0),
       _vm._v(" "),
       _c("div", { staticClass: "tab-content" }, [
@@ -39872,7 +39860,7 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("ul", { staticClass: "nav nav-tabs mt-4" }, [
+    return _c("ul", { staticClass: "nav nav-tabs mt-2" }, [
       _c("li", { staticClass: "nav-item" }, [
         _c(
           "a",
@@ -40103,18 +40091,24 @@ var render = function() {
   return _c(
     "div",
     [
-      _c(
-        "button",
-        {
-          staticClass: "btn btn-sm btn-primary mb-2",
-          on: {
-            click: function($event) {
-              return _vm.createEvent()
+      _c("div", { staticClass: "col-md-12 col-sm-12" }, [
+        _c("h1", { staticClass: "h3 text-gray-800 float-left" }, [
+          _vm._v("Events")
+        ]),
+        _vm._v(" "),
+        _c(
+          "button",
+          {
+            staticClass: "btn btn-sm btn-primary float-right",
+            on: {
+              click: function($event) {
+                return _vm.createEvent()
+              }
             }
-          }
-        },
-        [_vm._v("New Event")]
-      ),
+          },
+          [_vm._v("New Event")]
+        )
+      ]),
       _vm._v(" "),
       _c("div", { staticClass: "clearfix" }),
       _vm._v(" "),
@@ -40440,15 +40434,15 @@ var render = function() {
             [
               _c("li", { staticClass: "list-group-item" }, [
                 _c("strong", { staticClass: "mr-4" }, [
-                  _vm._v("WELCOME: " + _vm._s(this.attendee.name))
+                  _vm._v("WELCOME: " + _vm._s(_vm.attendee.name))
                 ]),
                 _vm._v(" || \n                "),
                 _c("strong", { staticClass: "mr-4 ml-4" }, [
-                  _vm._v("MOBILE: " + _vm._s(this.attendee.mobile))
+                  _vm._v("MOBILE: " + _vm._s(_vm.attendee.mobile))
                 ]),
                 _vm._v(" || \n                "),
                 _c("strong", { staticClass: "ml-4" }, [
-                  _vm._v("EMAIL: " + _vm._s(this.attendee.email) + " ")
+                  _vm._v("EMAIL: " + _vm._s(_vm.attendee.email) + " ")
                 ])
               ])
             ]
@@ -40472,39 +40466,6 @@ var render = function() {
         [
           _vm.showPoll
             ? _c("div", { staticClass: "col-md-12 col-sm-12" }, [
-                _c(
-                  "div",
-                  {
-                    directives: [
-                      {
-                        name: "show",
-                        rawName: "v-show",
-                        value: _vm.flashAlert,
-                        expression: "flashAlert"
-                      }
-                    ],
-                    staticClass:
-                      "alert alert-success alert-dismisable fade show",
-                    attrs: { role: "alert" }
-                  },
-                  [
-                    _c(
-                      "a",
-                      {
-                        staticClass: "close",
-                        attrs: {
-                          href: "#",
-                          "data-dismiss": "alert",
-                          "aria-label": "close"
-                        }
-                      },
-                      [_vm._v("×")]
-                    ),
-                    _vm._v(" "),
-                    _c("strong", [_vm._v(_vm._s(this.message))])
-                  ]
-                ),
-                _vm._v(" "),
                 _c("div", { staticClass: "card card-default" }, [
                   _c(
                     "div",
@@ -40566,17 +40527,41 @@ var render = function() {
                                   }
                                 },
                                 [
-                                  _c("div", {
-                                    directives: [
-                                      {
-                                        name: "show",
-                                        rawName: "v-show",
-                                        value: _vm.flashAlert,
-                                        expression: "flashAlert"
-                                      }
-                                    ],
-                                    staticClass: "card-header text-white"
-                                  }),
+                                  _c(
+                                    "div",
+                                    {
+                                      directives: [
+                                        {
+                                          name: "show",
+                                          rawName: "v-show",
+                                          value: _vm.flashAlert,
+                                          expression: "flashAlert"
+                                        }
+                                      ],
+                                      class:
+                                        _vm.alertType +
+                                        " col-md-10 alert alert-dismisable fade show",
+                                      attrs: { role: "alert" }
+                                    },
+                                    [
+                                      _c(
+                                        "a",
+                                        {
+                                          staticClass: "close",
+                                          attrs: {
+                                            href: "#",
+                                            "data-dismiss": "alert",
+                                            "aria-label": "close"
+                                          }
+                                        },
+                                        [_vm._v("×")]
+                                      ),
+                                      _vm._v(" "),
+                                      _c("strong", [
+                                        _vm._v(_vm._s(_vm.message))
+                                      ])
+                                    ]
+                                  ),
                                   _vm._v(" "),
                                   _c(
                                     "div",
@@ -40711,7 +40696,7 @@ var staticRenderFns = [
           }
         },
         [
-          _c("div", { staticClass: "card-body" }, [
+          _c("div", { staticClass: "card-body font-weight-bold" }, [
             _c("p", [
               _vm._v(
                 "Kindy click the title of each poll below to see its candidates, then click the "

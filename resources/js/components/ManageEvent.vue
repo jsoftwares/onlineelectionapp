@@ -1,6 +1,10 @@
 <template>
     <div>
-        <button class="btn btn-sm btn-primary mb-2" @click="createEvent()">New Event</button>
+
+        <div class="col-md-12 col-sm-12">
+            <h1 class="h3 text-gray-800 float-left">Events</h1>
+            <button class="btn btn-sm btn-primary float-right" @click="createEvent()">New Event</button>
+        </div>
         
         <div class="clearfix"></div>
         <!-- DataTales Example -->

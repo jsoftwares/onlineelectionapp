@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Vote extends Model
 {
     protected $dates = ['deleted_at'];
+    protected $fillable = ['candidate_id'];
     
     public function poll()
     {
