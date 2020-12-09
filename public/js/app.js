@@ -1944,6 +1944,10 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['event'],
   mounted: function mounted() {
@@ -1959,7 +1963,7 @@ __webpack_require__.r(__webpack_exports__);
       _this.showAlert('Attendee created successfully.', 4000);
     });
     this.$on('importQueued', function (result) {
-      _this.showAlert(result.messagge, 5000);
+      _this.showAlert(result.message, 5000);
     });
   },
   components: {
@@ -1969,6 +1973,8 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       message: '',
+      btnColor: this.event.status ? 'btn-success' : 'btn-danger',
+      //sets at page mount
       showMessage: false
     };
   },
@@ -1979,14 +1985,29 @@ __webpack_require__.r(__webpack_exports__);
     createPoll: function createPoll() {
       this.$emit('nnn');
     },
-    showAlert: function showAlert(message, time) {
+    openCloseEvent: function openCloseEvent() {
       var _this2 = this;
+
+      axios.put('/event/' + this.event.id, {
+        'status': Number(!this.event.status)
+      }).then(function (response) {
+        if (response.status == 200) {
+          _this2.event.status = response.data.mode;
+          _this2.event.status == 1 ? _this2.btnColor = 'btn-success' : _this2.btnColor = 'btn-danger'; // this.message = response.data.message;
+          // this.showAlert(this.message, 4000)
+        }
+      })["catch"](function (err) {
+        return console.log(err);
+      });
+    },
+    showAlert: function showAlert(message, time) {
+      var _this3 = this;
 
       this.message = message;
       this.showMessage = true;
       setInterval(function () {
-        _this2.showMessage = false;
-        _this2.message = '';
+        _this3.showMessage = false;
+        _this3.message = '';
       }, time);
     }
   }
@@ -2365,6 +2386,42 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['event'],
   mounted: function mounted() {
@@ -2372,6 +2429,11 @@ __webpack_require__.r(__webpack_exports__);
       this.token = localStorage.exchange_confd.split('_')[1];
       this.accessChecker();
     }
+  },
+  computed: {// checkTotalCandidate: function($event){
+    //     this.
+    //     }
+    // }
   },
   data: function data() {
     return {
@@ -2385,13 +2447,19 @@ __webpack_require__.r(__webpack_exports__);
       'alertType': '',
       'questionAlert': '',
       'baseURL': "http://127.0.0.1:8000",
-      'lsKey': 'conf' + this.event.uid
+      'lsKey': 'conf' + this.event.uid,
+      'btnText': 'CAsT VOTE',
+      'disableBtn': false,
+      'multiChoicePoll': {
+        'checkedCandidates': Array()
+      }
     };
   },
   methods: {
-    castVote: function castVote(poll, candidateId) {
+    castVote: function castVote(poll, candidateId, event) {
       var _this = this;
 
+      this.btnText = 'Sending...';
       axios.post('/api/vote', {
         'poll_uid': poll.uid,
         'candidate': candidateId,
@@ -2401,32 +2469,72 @@ __webpack_require__.r(__webpack_exports__);
         if (response.data.status === 200) {
           _this.alertType = 'alert-success';
 
-          _this.showAlert(response.data.message, _this.alertType, 5000);
+          _this.showAlert(response.data.message, _this.alertType, 4000);
+
+          _this.btnText = 'CAST VOTE';
         } else {
           _this.alertType = 'alert-danger';
 
-          _this.showAlert(response.data.message, _this.alertType, 5000);
+          _this.showAlert(response.data.message, _this.alertType, 4000);
         }
       })["catch"](function (err) {
         return console.log('Something went wrong');
       });
     },
-    showAlert: function showAlert(message, className, time) {
+    multiCandidateVote: function multiCandidateVote(poll) {
       var _this2 = this;
+
+      if (this.multiChoicePoll.checkedCandidates.length == 0 || this.multiChoicePoll.checkedCandidates.length > poll.max_candidate) {
+        this.showAlert('Sorry, you may select at most ' + poll.max_candidate + ' candidates.', 'alert-danger', 5000);
+      } else {
+        var data = new FormData();
+        data.append('candidates', this.multiChoicePoll.checkedCandidates);
+        data.append('poll_uid', poll.uid);
+        data.append('applc', this.attendee.uid);
+        data.append('misc', this.event.uid + '_' + this.event.id);
+        axios.post('/api/vote/multiple', data).then(function (response) {
+          if (response.status == 200) {
+            _this2.showAlert(response.data.message, 'alert-success', 5000);
+          } else {
+            if (response.data.status == 403) {
+              _this2.showAlert(response.data.message, 'alert-danger', 5000);
+
+              _this2.logout();
+            } else {
+              _this2.showAlert(response.data.message, 'alert-danger', 5000);
+            }
+          }
+        })["catch"](function (err) {
+          return console.log(err);
+        });
+      }
+    },
+    maxCandidate: function maxCandidate(e, pollMaxCandidate) {
+      var checkboxes = document.getElementsByClassName('boxes');
+
+      if (this.multiChoicePoll.checkedCandidates.length > pollMaxCandidate) {
+        this.disableBtn = true;
+        this.showAlert('Sorry, you may select at most ' + pollMaxCandidate + ' candidates.', 'alert-danger', 5000);
+      } else {
+        this.disableBtn = false;
+      }
+    },
+    showAlert: function showAlert(message, className, time) {
+      var _this3 = this;
 
       this.alertType = className;
       this.message = message;
       this.flashAlert = true;
       setTimeout(function () {
-        _this2.flashAlert = false;
-        _this2.alertType = '';
-        _this2.message = '';
+        _this3.flashAlert = false;
+        _this3.alertType = '';
+        _this3.message = '';
       }, time);
     },
     authenticateAttendee: function authenticateAttendee() {},
     question: function question() {},
     accessChecker: function accessChecker() {
-      var _this3 = this;
+      var _this4 = this;
 
       if (this.token != '') {
         axios.post('/attendee/login', {
@@ -2434,12 +2542,12 @@ __webpack_require__.r(__webpack_exports__);
           'token': this.token
         }).then(function (response) {
           if (response.data.status == 200) {
-            _this3.attendee = response.data.attendee;
-            _this3.onlineEntries = response.data.attendee.onlineSessionKey;
+            _this4.attendee = response.data.attendee;
+            _this4.onlineEntries = response.data.attendee.onlineSessionKey;
 
-            if (_this3.onlineEntries != '') {
-              localStorage.exchange_confd = _this3.onlineEntries;
-              _this3.grantAccess = true; //store data in local storage and in Cache
+            if (_this4.onlineEntries != '') {
+              localStorage.exchange_confd = _this4.onlineEntries;
+              _this4.grantAccess = true; //store data in local storage and in Cache
               // const userKey = this.attendee.uid+'_'+this.attendee.token; exchange_confd15fbcd0b21e634
               // STORE KEY
               // HTTP.post('/api/v1/attendee/create-session', {
@@ -2452,18 +2560,18 @@ __webpack_require__.r(__webpack_exports__);
               //     this.grantAccess = true;
               // }).catch(err => console.log(err));
             } else {
-              if (_this3.onlineEntries == localStorage.exchange_confd) {
-                _this3.grantAccess = true;
+              if (_this4.onlineEntries == localStorage.exchange_confd) {
+                _this4.grantAccess = true;
               } else {
-                _this3.grantAccess = false;
+                _this4.grantAccess = false;
 
-                _this3.showAlert('Oops! you can only login from one device, logout from other device inorder to login here.', 'alert-danger', 8000);
+                _this4.showAlert('Oops! you can only login from one device, logout from other device inorder to login here.', 'alert-danger', 8000);
               }
             }
-          } else if (response.data.status == 409) {
-            _this3.showAlert(response.data.message, 'alert-danger', 10000);
+          } else if (response.data.status == 404) {
+            _this4.showAlert(response.data.message, 'alert-danger', 10000);
           } else {
-            _this3.showAlert(response.data.message, 'alert-danger', 10000);
+            _this4.showAlert(response.data.message, 'alert-danger', 10000);
           }
         })["catch"](function (err) {
           return console.log(err);
@@ -2473,16 +2581,23 @@ __webpack_require__.r(__webpack_exports__);
       }
     },
     logout: function logout() {
-      var _this4 = this;
+      var _this5 = this;
 
       axios.post('/attendee/logout', {
-        'attendee': this.attendee.id,
+        'attendee': this.token,
+        //we're not sending ID in Attendee Resource, so we use token which another unique field in votesessions 
         'event_id': this.event.id
-      }).then(function () {
-        localStorage.removeItem('exchange_confd');
-        _this4.grantAccess = false;
-        _this4.attendee = null;
-        location.reload();
+      }).then(function (response) {
+        console.log(response.status);
+
+        if (response.status == 200) {
+          localStorage.removeItem('exchange_confd');
+          _this5.grantAccess = false;
+          _this5.attendee = null;
+          location.reload();
+        } else {
+          _this5.showAlert(response.data.message, 'alert-danger', 10000);
+        }
       });
     }
   }
@@ -2499,8 +2614,6 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-//
-//
 //
 //
 //
@@ -2625,6 +2738,8 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['event'],
   mounted: function mounted() {
@@ -2633,9 +2748,15 @@ __webpack_require__.r(__webpack_exports__);
   created: function created() {
     var _this = this;
 
-    setInterval(function () {
-      _this.loadElectionData();
-    }, 3000);
+    var getData;
+
+    if (this.event.status == 1) {
+      getData = setInterval(function () {
+        _this.loadElectionData();
+      }, 3000);
+    } else {
+      clearInterval(getData);
+    }
   },
   data: function data() {
     return {
@@ -2646,14 +2767,17 @@ __webpack_require__.r(__webpack_exports__);
     loadElectionData: function loadElectionData() {
       var _this2 = this;
 
-      axios.post('/api/polls/votes', {
+      axios.post('/api/eventpolls/votes', {
         'event_id': this.event.id
       }).then(function (response) {
-        console.log(response.data);
         _this2.polls = response.data.data;
       })["catch"](function (err) {
         return console.log(err);
       });
+    },
+    candidateVotePercentage: function candidateVotePercentage(candidateVotesCount, pollVotesCount) {
+      var percentage = candidateVotesCount / pollVotesCount * 100;
+      return percentage.toFixed(0) + '%';
     }
   }
 });
@@ -3014,6 +3138,14 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
 var Errors = /*#__PURE__*/function () {
   function Errors() {
     _classCallCheck(this, Errors);
@@ -3057,7 +3189,7 @@ var Candidate = function Candidate(candidate) {
   _classCallCheck(this, Candidate);
 
   this.id = candidate.id || null, this.name = candidate.name || '', this.email = candidate.email || '';
-  this.mobile = candidate.mobile || '', this.misc = candidate.misc || '', this.misc1 = candidate.misc1 || '', this.misc2 = candidate.misc2 || '', this.misc3 = candidate.misc3 || '', this.misc4 = candidate.misc4 || '';
+  this.mobile = candidate.mobile || '', this.photo = candidate.photo || '', this.misc = candidate.misc || '', this.misc1 = candidate.misc1 || '', this.misc2 = candidate.misc2 || '', this.misc3 = candidate.misc3 || '', this.misc4 = candidate.misc4 || '';
 };
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -3065,11 +3197,11 @@ var Candidate = function Candidate(candidate) {
     var _this = this;
 
     this.$parent.$on('addNewCandidate', function (poll) {
-      console.log(poll);
       _this.editing = false;
       _this.poll = poll;
       _this.candidate = new Candidate({});
-      _this.candidate.poll_id = poll.id;
+      _this.candidate.poll_id = poll.id; // this.candidate.photo = document.getElementById('mce-PHOTO').files[0];
+
       $('#addCandidate').modal();
     });
   },
@@ -3078,13 +3210,16 @@ var Candidate = function Candidate(candidate) {
       candidate: {},
       poll: {},
       errors: new Errors(),
-      editing: false
+      editing: false,
+      photo: null
     };
   },
   methods: {
     storeCandidate: function storeCandidate() {
       var _this2 = this;
 
+      this.candidate.photo = this.photo;
+      console.log(document.getElementById('mce-PHOTO').files[0]);
       axios.post('/api/candidate', this.candidate).then(function (response) {
         _this2.$parent.$emit('candidateCreated', response.data);
 
@@ -3092,6 +3227,11 @@ var Candidate = function Candidate(candidate) {
       })["catch"](function (err) {
         _this2.errors.record(err.response.data.errors);
       });
+    },
+    uploadPhoto: function uploadPhoto() {
+      this.photo = event.target.files[0]; // this.photo = document.getElementById('mce-PHOTO').files[0];
+
+      console.log(this.photo);
     }
   }
 });
@@ -3587,6 +3727,25 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 var Errors = /*#__PURE__*/function () {
   function Errors() {
     _classCallCheck(this, Errors);
@@ -3630,6 +3789,8 @@ var Poll = function Poll(poll) {
   _classCallCheck(this, Poll);
 
   this.id = poll.id || null, this.title = poll.title || '', this.short_title = poll.short_title || '';
+  this.type = poll.type || '';
+  this.max_candidate = poll.max_candidate || '';
   this.misc = poll.misc || '', this.misc1 = poll.misc1 || '', this.misc2 = poll.misc2 || '', this.misc3 = poll.misc3 || '';
 };
 
@@ -3679,6 +3840,7 @@ var Poll = function Poll(poll) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _AddAttendee_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AddAttendee.vue */ "./resources/js/components/children/AddAttendee.vue");
 /* harmony import */ var _ImportAttendees_vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ImportAttendees.vue */ "./resources/js/components/children/ImportAttendees.vue");
+//
 //
 //
 //
@@ -3863,6 +4025,9 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['polls', 'eventId'],
   mounted: function mounted() {
@@ -3914,14 +4079,6 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-//
-//
-//
-//
-//
-//
-//
-//
 //
 //
 //
@@ -4040,9 +4197,11 @@ var Errors = /*#__PURE__*/function () {
       data.append('file', this.file);
       data.append('event_id', this.eventId);
       axios.post('/api/attendee/import', data).then(function (response) {
-        _this.$parent.$emit('importQueued', response.data);
+        if (response.status == 200) {
+          _this.$parent.$emit('importQueued', response.data);
 
-        $('#importAttendees').modal('hide');
+          $('#importAttendees').modal('hide');
+        }
       })["catch"](function (err) {
         _this.errors.record(err.response.data.errors);
       });
@@ -4061,6 +4220,7 @@ var Errors = /*#__PURE__*/function () {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+//
 //
 //
 //
@@ -4147,6 +4307,10 @@ __webpack_require__.r(__webpack_exports__);
       }).then(response)["catch"](function (err) {
         return console.log(err);
       });
+    },
+    candidateVotePercentage: function candidateVotePercentage(candidateVotesCount, pollVotesCount) {
+      var percentage = candidateVotesCount / pollVotesCount * 100;
+      return percentage.toFixed(0) + '%';
     }
   }
 });
@@ -4162,6 +4326,10 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
 //
 //
 //
@@ -39830,6 +39998,27 @@ var render = function() {
       ]
     ),
     _vm._v(" "),
+    _c("div", [
+      _c(
+        "button",
+        {
+          class: _vm.btnColor + " btn btn-sm",
+          on: {
+            click: function($event) {
+              return _vm.openCloseEvent()
+            }
+          }
+        },
+        [
+          _vm._v(
+            "\r\n            " +
+              _vm._s(_vm.event.status ? "active" : "inactive") +
+              "\r\n        "
+          )
+        ]
+      )
+    ]),
+    _vm._v(" "),
     _c("div", {}, [
       _vm._m(0),
       _vm._v(" "),
@@ -40307,93 +40496,83 @@ var render = function() {
           staticClass: "row justify-content-center mb-5"
         },
         [
-          _c(
-            "div",
-            { staticClass: "col-md-8 col-sm-8" },
-            [
-              _c("transition", { attrs: { name: "fade" } }, [
-                _c(
-                  "div",
+          _c("div", { staticClass: "col-md-8 col-sm-8" }, [
+            _c(
+              "div",
+              {
+                directives: [
                   {
+                    name: "show",
+                    rawName: "v-show",
+                    value: _vm.flashAlert,
+                    expression: "flashAlert"
+                  }
+                ],
+                class: _vm.alertType + " alert alert-dismisable fade show",
+                attrs: { role: "alert" }
+              },
+              [
+                _c(
+                  "a",
+                  {
+                    staticClass: "close",
+                    attrs: {
+                      href: "#",
+                      "data-dismiss": "alert",
+                      "aria-label": "close"
+                    }
+                  },
+                  [_vm._v("×")]
+                ),
+                _vm._v(" "),
+                _c("strong", [_vm._v(_vm._s(this.message))])
+              ]
+            ),
+            _vm._v(" "),
+            _c("div", { staticClass: "card card-default" }, [
+              _vm._m(0),
+              _vm._v(" "),
+              _c("div", { staticClass: "card-body" }, [
+                _c("div", { staticClass: "form-group" }, [
+                  _c("label", { attrs: { for: "" } }, [_vm._v("Enter Token")]),
+                  _vm._v(" "),
+                  _c("input", {
                     directives: [
                       {
-                        name: "show",
-                        rawName: "v-show",
-                        value: _vm.flashAlert,
-                        expression: "flashAlert"
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.token,
+                        expression: "token"
                       }
                     ],
-                    staticClass:
-                      "alert alert-danger alert-dismisable fade show",
-                    attrs: { role: "alert" }
-                  },
-                  [
-                    _c(
-                      "a",
-                      {
-                        staticClass: "close",
-                        attrs: {
-                          href: "#",
-                          "data-dismiss": "alert",
-                          "aria-label": "close"
+                    staticClass: "form-control",
+                    attrs: { type: "text", autofocus: "" },
+                    domProps: { value: _vm.token },
+                    on: {
+                      input: function($event) {
+                        if ($event.target.composing) {
+                          return
                         }
-                      },
-                      [_vm._v("×")]
-                    ),
-                    _vm._v(" "),
-                    _c("strong", [_vm._v(_vm._s(this.message))])
-                  ]
-                )
-              ]),
-              _vm._v(" "),
-              _c("div", { staticClass: "card card-default" }, [
-                _vm._m(0),
-                _vm._v(" "),
-                _c("div", { staticClass: "card-body" }, [
-                  _c("div", { staticClass: "form-group" }, [
-                    _c("label", { attrs: { for: "" } }, [
-                      _vm._v("Enter Token")
-                    ]),
-                    _vm._v(" "),
-                    _c("input", {
-                      directives: [
-                        {
-                          name: "model",
-                          rawName: "v-model",
-                          value: _vm.token,
-                          expression: "token"
-                        }
-                      ],
-                      staticClass: "form-control",
-                      attrs: { type: "text", autofocus: "" },
-                      domProps: { value: _vm.token },
-                      on: {
-                        input: function($event) {
-                          if ($event.target.composing) {
-                            return
-                          }
-                          _vm.token = $event.target.value
-                        }
+                        _vm.token = $event.target.value
                       }
-                    })
-                  ]),
-                  _vm._v(" "),
-                  _c("div", { staticClass: "form-group" }, [
-                    _c(
-                      "button",
-                      {
-                        staticClass:
-                          "btn btn-block btn-primary font-weight-bold text-white",
-                        on: { click: _vm.accessChecker }
-                      },
-                      [_vm._v("Continue...")]
-                    )
-                  ])
+                    }
+                  })
+                ]),
+                _vm._v(" "),
+                _c("div", { staticClass: "form-group" }, [
+                  _c(
+                    "button",
+                    {
+                      staticClass:
+                        "btn btn-block btn-primary font-weight-bold text-white",
+                      on: { click: _vm.accessChecker }
+                    },
+                    [_vm._v("Continue...")]
+                  )
                 ])
               ])
-            ],
-            1
-          )
+            ])
+          ])
         ]
       ),
       _vm._v(" "),
@@ -40414,7 +40593,7 @@ var render = function() {
           _c(
             "button",
             {
-              staticClass: "btn btn-primary text-white mb-2 float-right",
+              staticClass: "btn btn-danger text-white mb-2 float-right",
               on: {
                 click: function($event) {
                   $event.preventDefault()
@@ -40440,10 +40619,7 @@ var render = function() {
                 _c("strong", { staticClass: "mr-4 ml-4" }, [
                   _vm._v("MOBILE: " + _vm._s(_vm.attendee.mobile))
                 ]),
-                _vm._v(" || \n                "),
-                _c("strong", { staticClass: "ml-4" }, [
-                  _vm._v("EMAIL: " + _vm._s(_vm.attendee.email) + " ")
-                ])
+                _vm._v(" || \n            ")
               ])
             ]
           )
@@ -40466,169 +40642,500 @@ var render = function() {
         [
           _vm.showPoll
             ? _c("div", { staticClass: "col-md-12 col-sm-12" }, [
-                _c("div", { staticClass: "card card-default" }, [
-                  _c(
-                    "div",
-                    { staticClass: "card-header bg-primary text-white" },
-                    [_c("h5", [_vm._v(_vm._s(_vm.event.title))])]
-                  ),
-                  _vm._v(" "),
-                  _c("div", { staticClass: "card-body" }, [
-                    _c(
-                      "div",
-                      { attrs: { id: "accordion" } },
-                      [
-                        _vm._m(1),
-                        _vm._v(" "),
-                        _vm._l(_vm.event.polls, function(poll, index) {
-                          return _c(
-                            "div",
-                            { key: index, staticClass: "card" },
-                            [
-                              _c(
-                                "div",
-                                {
-                                  staticClass: "card-header",
-                                  attrs: { id: "headingOne" }
-                                },
-                                [
-                                  _c("h5", { staticClass: "mb-0" }, [
-                                    _c(
-                                      "button",
-                                      {
-                                        staticClass: "btn btn-link",
-                                        attrs: {
-                                          "data-toggle": "collapse",
-                                          "data-target": "#collapse" + poll.id,
-                                          "aria-expanded": "true",
-                                          "aria-controls": "collapseOne"
-                                        }
-                                      },
-                                      [
-                                        _vm._v(
-                                          "\n                                    Vote for " +
-                                            _vm._s(poll.title) +
-                                            "\n                                    "
-                                        )
-                                      ]
-                                    )
-                                  ])
-                                ]
-                              ),
-                              _vm._v(" "),
-                              _c(
-                                "div",
-                                {
-                                  staticClass: "collapse",
-                                  attrs: {
-                                    id: "collapse" + poll.id,
-                                    "aria-labelledby": "headingOne",
-                                    "data-parent": "#accordion"
-                                  }
-                                },
-                                [
-                                  _c(
-                                    "div",
-                                    {
-                                      directives: [
-                                        {
-                                          name: "show",
-                                          rawName: "v-show",
-                                          value: _vm.flashAlert,
-                                          expression: "flashAlert"
-                                        }
-                                      ],
-                                      class:
-                                        _vm.alertType +
-                                        " col-md-10 alert alert-dismisable fade show",
-                                      attrs: { role: "alert" }
-                                    },
-                                    [
+                _c(
+                  "div",
+                  { staticClass: "card card-default col-md-12 col-sm-12" },
+                  [
+                    _c("div", { staticClass: "card-header bg-success" }, [
+                      _c(
+                        "h5",
+                        { staticClass: " text-white font-weight-bold" },
+                        [_vm._v(_vm._s(_vm.event.title))]
+                      )
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "card-body" }, [
+                      _c(
+                        "div",
+                        { attrs: { id: "accordion" } },
+                        [
+                          _vm._m(1),
+                          _vm._v(" "),
+                          _vm._l(_vm.event.polls, function(poll, index) {
+                            return _c(
+                              "div",
+                              { key: index, staticClass: "card" },
+                              [
+                                _c(
+                                  "div",
+                                  {
+                                    staticClass: "card-header p-0",
+                                    attrs: { id: "headingOne" }
+                                  },
+                                  [
+                                    _c("h5", { staticClass: "mb-0" }, [
                                       _c(
-                                        "a",
+                                        "button",
                                         {
-                                          staticClass: "close",
+                                          staticClass:
+                                            "btn btn-link font-weight-bold",
                                           attrs: {
-                                            href: "#",
-                                            "data-dismiss": "alert",
-                                            "aria-label": "close"
+                                            "data-toggle": "collapse",
+                                            "data-target":
+                                              "#collapse" + poll.id,
+                                            "aria-expanded": "true",
+                                            "aria-controls": "collapseOne"
                                           }
                                         },
-                                        [_vm._v("×")]
-                                      ),
-                                      _vm._v(" "),
-                                      _c("strong", [
-                                        _vm._v(_vm._s(_vm.message))
-                                      ])
-                                    ]
-                                  ),
-                                  _vm._v(" "),
-                                  _c(
-                                    "div",
-                                    { staticClass: "card-body row" },
-                                    _vm._l(poll.candidates, function(
-                                      candidate,
-                                      index
-                                    ) {
-                                      return _c(
-                                        "div",
-                                        {
-                                          key: index,
-                                          staticClass: "media mb-4 mr-4"
-                                        },
                                         [
-                                          _vm._m(2, true),
-                                          _vm._v(" "),
-                                          _c(
-                                            "div",
-                                            { staticClass: "media-body" },
-                                            [
-                                              _c(
-                                                "h6",
-                                                {
-                                                  staticClass: "media-heading"
-                                                },
-                                                [_vm._v(_vm._s(candidate.name))]
-                                              ),
-                                              _vm._v(" "),
-                                              _c("p", [
-                                                _c(
-                                                  "button",
-                                                  {
-                                                    staticClass:
-                                                      "btn btn-sm btn-primary mb-2",
-                                                    on: {
-                                                      click: function($event) {
-                                                        return _vm.castVote(
-                                                          poll,
-                                                          candidate.id
-                                                        )
-                                                      }
-                                                    }
-                                                  },
-                                                  [_vm._v("Cast Vote")]
-                                                )
-                                              ])
-                                            ]
+                                          _vm._v(
+                                            "\n                                    Vote for " +
+                                              _vm._s(poll.title) +
+                                              "\n                                    "
                                           )
                                         ]
                                       )
-                                    }),
-                                    0
-                                  )
-                                ]
-                              )
-                            ]
-                          )
-                        })
-                      ],
-                      2
-                    )
-                  ])
-                ])
+                                    ])
+                                  ]
+                                ),
+                                _vm._v(" "),
+                                _c(
+                                  "div",
+                                  {
+                                    staticClass: "collapse",
+                                    attrs: {
+                                      id: "collapse" + poll.id,
+                                      "aria-labelledby": "headingOne",
+                                      "data-parent": "#accordion"
+                                    }
+                                  },
+                                  [
+                                    _c(
+                                      "div",
+                                      {
+                                        directives: [
+                                          {
+                                            name: "show",
+                                            rawName: "v-show",
+                                            value: _vm.flashAlert,
+                                            expression: "flashAlert"
+                                          }
+                                        ],
+                                        class:
+                                          _vm.alertType +
+                                          " col-md-12 cols-sm-12 alert alert-dismisable fade show",
+                                        attrs: { role: "alert" }
+                                      },
+                                      [
+                                        _c(
+                                          "a",
+                                          {
+                                            staticClass: "close",
+                                            attrs: {
+                                              href: "#",
+                                              "data-dismiss": "alert",
+                                              "aria-label": "close"
+                                            }
+                                          },
+                                          [_vm._v("×")]
+                                        ),
+                                        _vm._v(" "),
+                                        _c("strong", [
+                                          _vm._v(_vm._s(_vm.message))
+                                        ])
+                                      ]
+                                    ),
+                                    _vm._v(" "),
+                                    poll.type == 1
+                                      ? _c(
+                                          "div",
+                                          { staticClass: "card-body row" },
+                                          _vm._l(poll.candidates, function(
+                                            candidate,
+                                            index
+                                          ) {
+                                            return _c(
+                                              "div",
+                                              {
+                                                key: index,
+                                                staticClass: "media mb-4 mr-4"
+                                              },
+                                              [
+                                                _vm._m(2, true),
+                                                _vm._v(" "),
+                                                _c(
+                                                  "div",
+                                                  { staticClass: "media-body" },
+                                                  [
+                                                    _c(
+                                                      "h6",
+                                                      {
+                                                        staticClass:
+                                                          "media-heading font-weight-bold"
+                                                      },
+                                                      [
+                                                        _vm._v(
+                                                          _vm._s(candidate.name)
+                                                        )
+                                                      ]
+                                                    ),
+                                                    _vm._v(" "),
+                                                    _c(
+                                                      "button",
+                                                      {
+                                                        staticClass:
+                                                          "btn btn-sm btn-success mb-2",
+                                                        attrs: {
+                                                          disabled:
+                                                            _vm.btnText == ""
+                                                        },
+                                                        on: {
+                                                          click: function(
+                                                            $event
+                                                          ) {
+                                                            return _vm.castVote(
+                                                              poll,
+                                                              candidate.id,
+                                                              _vm.event
+                                                            )
+                                                          }
+                                                        }
+                                                      },
+                                                      [
+                                                        _c(
+                                                          "div",
+                                                          {
+                                                            directives: [
+                                                              {
+                                                                name: "show",
+                                                                rawName:
+                                                                  "v-show",
+                                                                value:
+                                                                  _vm.btnText ==
+                                                                  "Sending...",
+                                                                expression:
+                                                                  "btnText=='Sending...'"
+                                                              }
+                                                            ],
+                                                            staticClass:
+                                                              "spinner-border spinner-border-sm",
+                                                            attrs: {
+                                                              role: "status"
+                                                            }
+                                                          },
+                                                          [
+                                                            _c(
+                                                              "span",
+                                                              {
+                                                                staticClass:
+                                                                  "sr-only"
+                                                              },
+                                                              [
+                                                                _vm._v(
+                                                                  "Loading..."
+                                                                )
+                                                              ]
+                                                            )
+                                                          ]
+                                                        ),
+                                                        _vm._v(
+                                                          "\n                                                        " +
+                                                            _vm._s(
+                                                              _vm.btnText
+                                                            ) +
+                                                            "\n                                                    "
+                                                        )
+                                                      ]
+                                                    )
+                                                  ]
+                                                )
+                                              ]
+                                            )
+                                          }),
+                                          0
+                                        )
+                                      : _c(
+                                          "div",
+                                          { staticClass: "card-body" },
+                                          [
+                                            _c(
+                                              "h6",
+                                              {
+                                                staticClass: "text-danger mb-4"
+                                              },
+                                              [
+                                                _vm._v(
+                                                  "You may select at most " +
+                                                    _vm._s(poll.max_candidate) +
+                                                    " candidates from below."
+                                                )
+                                              ]
+                                            ),
+                                            _vm._v(" "),
+                                            _c(
+                                              "form",
+                                              {
+                                                staticClass: "row",
+                                                attrs: {
+                                                  action: "",
+                                                  method: "post"
+                                                },
+                                                on: {
+                                                  submit: function($event) {
+                                                    $event.preventDefault()
+                                                    return _vm.multiCandidateVote(
+                                                      poll
+                                                    )
+                                                  }
+                                                }
+                                              },
+                                              [
+                                                _vm._l(
+                                                  poll.candidates,
+                                                  function(candidate, index) {
+                                                    return _c(
+                                                      "div",
+                                                      {
+                                                        key: index,
+                                                        staticClass:
+                                                          "media mb-4 mr-4"
+                                                      },
+                                                      [
+                                                        _c("div", {}, [
+                                                          _vm._m(3, true),
+                                                          _vm._v(" "),
+                                                          _c(
+                                                            "div",
+                                                            {
+                                                              staticClass:
+                                                                "media-body"
+                                                            },
+                                                            [
+                                                              _c("input", {
+                                                                directives: [
+                                                                  {
+                                                                    name:
+                                                                      "model",
+                                                                    rawName:
+                                                                      "v-model",
+                                                                    value:
+                                                                      _vm
+                                                                        .multiChoicePoll
+                                                                        .checkedCandidates,
+                                                                    expression:
+                                                                      "multiChoicePoll.checkedCandidates"
+                                                                  }
+                                                                ],
+                                                                staticClass:
+                                                                  "boxes",
+                                                                attrs: {
+                                                                  type:
+                                                                    "checkbox",
+                                                                  name:
+                                                                    candidate.id
+                                                                },
+                                                                domProps: {
+                                                                  value:
+                                                                    candidate.id,
+                                                                  checked: Array.isArray(
+                                                                    _vm
+                                                                      .multiChoicePoll
+                                                                      .checkedCandidates
+                                                                  )
+                                                                    ? _vm._i(
+                                                                        _vm
+                                                                          .multiChoicePoll
+                                                                          .checkedCandidates,
+                                                                        candidate.id
+                                                                      ) > -1
+                                                                    : _vm
+                                                                        .multiChoicePoll
+                                                                        .checkedCandidates
+                                                                },
+                                                                on: {
+                                                                  change: [
+                                                                    function(
+                                                                      $event
+                                                                    ) {
+                                                                      var $$a =
+                                                                          _vm
+                                                                            .multiChoicePoll
+                                                                            .checkedCandidates,
+                                                                        $$el =
+                                                                          $event.target,
+                                                                        $$c = $$el.checked
+                                                                          ? true
+                                                                          : false
+                                                                      if (
+                                                                        Array.isArray(
+                                                                          $$a
+                                                                        )
+                                                                      ) {
+                                                                        var $$v =
+                                                                            candidate.id,
+                                                                          $$i = _vm._i(
+                                                                            $$a,
+                                                                            $$v
+                                                                          )
+                                                                        if (
+                                                                          $$el.checked
+                                                                        ) {
+                                                                          $$i <
+                                                                            0 &&
+                                                                            _vm.$set(
+                                                                              _vm.multiChoicePoll,
+                                                                              "checkedCandidates",
+                                                                              $$a.concat(
+                                                                                [
+                                                                                  $$v
+                                                                                ]
+                                                                              )
+                                                                            )
+                                                                        } else {
+                                                                          $$i >
+                                                                            -1 &&
+                                                                            _vm.$set(
+                                                                              _vm.multiChoicePoll,
+                                                                              "checkedCandidates",
+                                                                              $$a
+                                                                                .slice(
+                                                                                  0,
+                                                                                  $$i
+                                                                                )
+                                                                                .concat(
+                                                                                  $$a.slice(
+                                                                                    $$i +
+                                                                                      1
+                                                                                  )
+                                                                                )
+                                                                            )
+                                                                        }
+                                                                      } else {
+                                                                        _vm.$set(
+                                                                          _vm.multiChoicePoll,
+                                                                          "checkedCandidates",
+                                                                          $$c
+                                                                        )
+                                                                      }
+                                                                    },
+                                                                    function(
+                                                                      $event
+                                                                    ) {
+                                                                      return _vm.maxCandidate(
+                                                                        $event,
+                                                                        poll.max_candidate
+                                                                      )
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              })
+                                                            ]
+                                                          ),
+                                                          _vm._v(" "),
+                                                          _c(
+                                                            "h6",
+                                                            {
+                                                              staticClass:
+                                                                "media-heading font-weight-bold"
+                                                            },
+                                                            [
+                                                              _vm._v(
+                                                                _vm._s(
+                                                                  candidate.name
+                                                                )
+                                                              )
+                                                            ]
+                                                          )
+                                                        ])
+                                                      ]
+                                                    )
+                                                  }
+                                                ),
+                                                _vm._v(" "),
+                                                _c(
+                                                  "div",
+                                                  { staticClass: "col-md-12" },
+                                                  [
+                                                    _c(
+                                                      "button",
+                                                      {
+                                                        staticClass:
+                                                          "btn btn-sm btn-success mb-2",
+                                                        attrs: {
+                                                          type: "submit",
+                                                          disabled:
+                                                            _vm.btnText ==
+                                                              "Sending..." ||
+                                                            _vm.disableBtn
+                                                        }
+                                                      },
+                                                      [
+                                                        _c(
+                                                          "div",
+                                                          {
+                                                            directives: [
+                                                              {
+                                                                name: "show",
+                                                                rawName:
+                                                                  "v-show",
+                                                                value:
+                                                                  _vm.btnText ==
+                                                                  "Sending...",
+                                                                expression:
+                                                                  "btnText=='Sending...'"
+                                                              }
+                                                            ],
+                                                            staticClass:
+                                                              "spinner-border spinner-border-sm",
+                                                            attrs: {
+                                                              role: "status"
+                                                            }
+                                                          },
+                                                          [
+                                                            _c(
+                                                              "span",
+                                                              {
+                                                                staticClass:
+                                                                  "sr-only"
+                                                              },
+                                                              [
+                                                                _vm._v(
+                                                                  "Loading..."
+                                                                )
+                                                              ]
+                                                            )
+                                                          ]
+                                                        ),
+                                                        _vm._v(
+                                                          "\n                                                    " +
+                                                            _vm._s(
+                                                              _vm.btnText
+                                                            ) +
+                                                            "\n                                                "
+                                                        )
+                                                      ]
+                                                    )
+                                                  ]
+                                                )
+                                              ],
+                                              2
+                                            )
+                                          ]
+                                        )
+                                  ]
+                                )
+                              ]
+                            )
+                          })
+                        ],
+                        2
+                      )
+                    ])
+                  ]
+                )
               ])
             : _c("div", { staticClass: "col-md-7 col-sm-7" }, [
-                _vm._m(3),
+                _vm._m(4),
                 _vm._v(" "),
                 _c("div", { staticClass: "card card-default" }, [
                   true
@@ -40667,28 +41174,36 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "card" }, [
-      _c("div", { staticClass: "card-header", attrs: { id: "headingTwo" } }, [
-        _c("h5", { staticClass: "mb-0" }, [
-          _c(
-            "button",
-            {
-              staticClass: "btn btn-link collapsed",
-              attrs: {
-                "data-toggle": "collapse",
-                "data-target": "#collapseTwo",
-                "aria-expanded": "false",
-                "aria-controls": "collapseTwo"
-              }
-            },
-            [_c("h5", [_vm._v("INSTRUCTIONS")])]
-          )
-        ])
-      ]),
+      _c(
+        "div",
+        { staticClass: "card-header p-0", attrs: { id: "headingTwo" } },
+        [
+          _c("h5", { staticClass: "m-0 p-0" }, [
+            _c(
+              "button",
+              {
+                staticClass: "btn btn-link",
+                attrs: {
+                  "data-toggle": "collapse",
+                  "data-target": "#collapseTwo",
+                  "aria-expanded": "false",
+                  "aria-controls": "collapseTwo"
+                }
+              },
+              [
+                _c("span", { staticClass: "font-weight-bold text-danger h5" }, [
+                  _vm._v("INSTRUCTIONS")
+                ])
+              ]
+            )
+          ])
+        ]
+      ),
       _vm._v(" "),
       _c(
         "div",
         {
-          staticClass: "collapse show",
+          staticClass: "collapse show text-justify",
           attrs: {
             id: "collapseTwo",
             "aria-labelledby": "headingTwo",
@@ -40696,19 +41211,27 @@ var staticRenderFns = [
           }
         },
         [
-          _c("div", { staticClass: "card-body font-weight-bold" }, [
+          _c("div", { staticClass: "card-body font-weight-bold text-danger" }, [
             _c("p", [
               _vm._v(
-                "Kindy click the title of each poll below to see its candidates, then click the "
-              ),
-              _c("strong", [_vm._v('"CAST VOTE"')]),
-              _vm._v(
-                " button next to your candidate of choice\n                                    to cast your vote for that candidate. Note that you can only vote for one candidate per poll, clicking another button within\n                                    the same poll will change your previous vote.\n                               "
+                'Kindy click the title of each poll below to see its candidates, then click the "CAST VOTE" button next to your candidate of choice\n                                    to cast your vote for that candidate. Note that you can only vote for one candidate per poll, clicking another button within\n                                    the same poll will change your previous vote. After voting, kindly click the LOGOUT button at the top of this page to exit. Thank you.\n                               '
               )
             ])
           ])
         ]
       )
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "media-left" }, [
+      _c("img", {
+        staticClass: "media-object",
+        staticStyle: { width: "64px" },
+        attrs: { src: "/img/img_avatar1.png" }
+      })
     ])
   },
   function() {
@@ -40756,19 +41279,6 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c(
-      "button",
-      {
-        staticClass: "btn btn-sm btn-primary mb-2",
-        on: {
-          click: function($event) {
-            return _vm.createPoll()
-          }
-        }
-      },
-      [_vm._v("New Poll")]
-    ),
-    _vm._v(" "),
     _c("div", { staticClass: "clearfix" }),
     _vm._v(" "),
     _c(
@@ -40799,7 +41309,7 @@ var render = function() {
       ]
     ),
     _vm._v(" "),
-    _c("div", { staticClass: "container-fluid" }, [
+    _c("div", { staticClass: "container" }, [
       _c("h4", [_vm._v(_vm._s(_vm.poll.title))]),
       _vm._v(" "),
       _vm._m(0),
@@ -40886,7 +41396,7 @@ var render = function() {
     [
       _c("div", { staticClass: "card card-default" }, [
         _c("div", { staticClass: "card-header bg-primary text-white" }, [
-          _c("h5", [_vm._v("POLLS RESULT FOR " + _vm._s(_vm.event.title))])
+          _c("h5", [_vm._v("LIVE RESULTS FOR " + _vm._s(_vm.event.title))])
         ]),
         _vm._v(" "),
         _c("div", { staticClass: "card-body" }, [
@@ -40897,29 +41407,28 @@ var render = function() {
               return _c("div", { key: index, staticClass: "card" }, [
                 _c(
                   "div",
-                  { staticClass: "card-header", attrs: { id: "headingOne" } },
+                  {
+                    staticClass: "card-header m-0 p-0",
+                    attrs: { id: "headingOne" }
+                  },
                   [
-                    _c("h5", { staticClass: "mb-0" }, [
-                      _c(
-                        "button",
-                        {
-                          staticClass: "btn btn-link",
-                          attrs: {
-                            "data-toggle": "collapse",
-                            "data-target": "#collapse" + poll.id,
-                            "aria-expanded": "true",
-                            "aria-controls": "collapseOne"
-                          }
-                        },
-                        [
-                          _vm._v(
-                            "\n                            Vote for " +
-                              _vm._s(poll.title) +
-                              "\n                            "
-                          )
-                        ]
-                      )
-                    ])
+                    _c(
+                      "button",
+                      {
+                        staticClass: "btn btn-link",
+                        attrs: {
+                          "data-toggle": "collapse",
+                          "data-target": "#collapse" + poll.id,
+                          "aria-expanded": "true",
+                          "aria-controls": "collapseOne"
+                        }
+                      },
+                      [
+                        _c("h5", { staticClass: "mb-0 font-weight-bold" }, [
+                          _vm._v("Vote for " + _vm._s(poll.title))
+                        ])
+                      ]
+                    )
                   ]
                 ),
                 _vm._v(" "),
@@ -40946,31 +41455,35 @@ var render = function() {
                             _vm._v(" "),
                             _c("div", { staticClass: "media-body" }, [
                               _c(
-                                "h6",
+                                "h5",
                                 {
                                   staticClass: "media-heading font-weight-bold"
                                 },
                                 [_vm._v(_vm._s(candidate.name))]
                               ),
                               _vm._v(" "),
-                              _c("p", [
-                                _c("strong", [
-                                  _vm._v(
-                                    "VOTES COUNT: " + _vm._s(candidate.votes)
-                                  )
-                                ])
-                              ]),
-                              _vm._v(" "),
-                              _c("p", [
-                                _c("strong", [
-                                  _vm._v(
-                                    "STATUS: " +
-                                      _vm._s(candidate.winner) +
-                                      " - (" +
-                                      _vm._s(candidate.via) +
-                                      ")"
-                                  )
-                                ])
+                              _c("h4", [
+                                _vm._v("VOTES: "),
+                                _c(
+                                  "span",
+                                  { staticClass: "badge badge-secondary" },
+                                  [_vm._v(_vm._s(candidate.votes))]
+                                ),
+                                _vm._v(" "),
+                                _c(
+                                  "span",
+                                  { staticClass: "badge badge-info" },
+                                  [
+                                    _vm._v(
+                                      _vm._s(
+                                        _vm.candidateVotePercentage(
+                                          candidate.votes,
+                                          poll.votes.length
+                                        )
+                                      )
+                                    )
+                                  ]
+                                )
                               ])
                             ])
                           ]
@@ -41633,6 +42146,7 @@ var render = function() {
                 {
                   attrs: { action: "", method: "post" },
                   on: {
+                    change: _vm.uploadPhoto,
                     submit: function($event) {
                       $event.preventDefault()
                       _vm.editing ? _vm.updateCandidate() : _vm.storeCandidate()
@@ -41801,6 +42315,24 @@ var render = function() {
                             })
                           : _vm._e()
                       ])
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "col-10 col-md-12 pr-0" }, [
+                      _c("label", { attrs: { for: "mce-NAME" } }, [
+                        _vm._v("Photo")
+                      ]),
+                      _c("br"),
+                      _vm._v(" "),
+                      _vm.errors.has("photo")
+                        ? _c("span", {
+                            staticClass: "help text-danger",
+                            domProps: {
+                              textContent: _vm._s(_vm.errors.get("photo"))
+                            }
+                          })
+                        : _vm._e(),
+                      _vm._v(" "),
+                      _vm._m(2)
                     ]),
                     _vm._v(" "),
                     _c("div", { staticClass: "col-10 col-md-12 pr-0" }, [
@@ -42109,6 +42641,17 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "text-center" }, [
       _c("p", [_c("strong", [_vm._v("Fill in details.")])])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "md-form" }, [
+      _c("input", {
+        staticClass: "form-control",
+        attrs: { name: "photo", id: "mce-PHOTO", type: "file" }
+      })
     ])
   }
 ]
@@ -43002,6 +43545,129 @@ var render = function() {
                     ]),
                     _vm._v(" "),
                     _c("div", { staticClass: "col-10 col-md-12 pr-0" }, [
+                      _c("div", { staticClass: "md-formn" }, [
+                        _c(
+                          "select",
+                          {
+                            directives: [
+                              {
+                                name: "model",
+                                rawName: "v-model",
+                                value: _vm.poll.type,
+                                expression: "poll.type"
+                              }
+                            ],
+                            staticClass:
+                              "mdb-select md-form form-control required",
+                            attrs: {
+                              name: "type",
+                              "aria-required": "true",
+                              required: ""
+                            },
+                            on: {
+                              change: function($event) {
+                                var $$selectedVal = Array.prototype.filter
+                                  .call($event.target.options, function(o) {
+                                    return o.selected
+                                  })
+                                  .map(function(o) {
+                                    var val = "_value" in o ? o._value : o.value
+                                    return val
+                                  })
+                                _vm.$set(
+                                  _vm.poll,
+                                  "type",
+                                  $event.target.multiple
+                                    ? $$selectedVal
+                                    : $$selectedVal[0]
+                                )
+                              }
+                            }
+                          },
+                          [
+                            _c(
+                              "option",
+                              {
+                                attrs: { value: "", disabled: "", selected: "" }
+                              },
+                              [_vm._v("Choose Type")]
+                            ),
+                            _vm._v(" "),
+                            _c("option", { attrs: { value: "1" } }, [
+                              _vm._v("Normal")
+                            ]),
+                            _vm._v(" "),
+                            _c("option", { attrs: { value: "2" } }, [
+                              _vm._v("Multi Candidate")
+                            ])
+                          ]
+                        ),
+                        _vm._v(" "),
+                        _vm.errors.has("type")
+                          ? _c("span", {
+                              staticClass: "help text-danger",
+                              domProps: {
+                                textContent: _vm._s(_vm.errors.get("type"))
+                              }
+                            })
+                          : _vm._e()
+                      ])
+                    ]),
+                    _vm._v(" "),
+                    _vm.poll.type == 2
+                      ? _c("div", { staticClass: "col-10 col-md-12 pr-0" }, [
+                          _c("div", { staticClass: "md-form" }, [
+                            _c("input", {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: _vm.poll.max_candidate,
+                                  expression: "poll.max_candidate"
+                                }
+                              ],
+                              staticClass: "form-control",
+                              attrs: {
+                                name: "max_candidate",
+                                id: "mce-MAXCANDIDATE",
+                                type: "number"
+                              },
+                              domProps: { value: _vm.poll.max_candidate },
+                              on: {
+                                input: function($event) {
+                                  if ($event.target.composing) {
+                                    return
+                                  }
+                                  _vm.$set(
+                                    _vm.poll,
+                                    "max_candidate",
+                                    $event.target.value
+                                  )
+                                }
+                              }
+                            }),
+                            _vm._v(" "),
+                            _c(
+                              "label",
+                              { attrs: { for: "mce-MAXCANDIDATE" } },
+                              [_vm._v("Max Candidate")]
+                            ),
+                            _vm._v(" "),
+                            _vm.errors.has("max_candidate")
+                              ? _c("span", {
+                                  staticClass: "help text-danger",
+                                  domProps: {
+                                    textContent: _vm._s(
+                                      _vm.errors.get("max_candidate")
+                                    )
+                                  }
+                                })
+                              : _vm._e()
+                          ])
+                        ])
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "col-10 col-md-12 pr-0" }, [
                       _c("div", { staticClass: "md-form" }, [
                         _c("input", {
                           directives: [
@@ -43282,160 +43948,158 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c(
-    "div",
-    { staticClass: "card shadow mb-4" },
-    [
-      _c("div", { staticClass: "card-header py-3" }, [
-        _c("div", { staticClass: "row" }, [
-          _c(
-            "h6",
-            { staticClass: "m-0 font-weight-bold text-primary col-md-8" },
-            [_vm._v("All Attendees")]
-          ),
-          _vm._v(" "),
-          _c(
-            "div",
-            {
-              staticClass: "btn-group float-right col-md-4",
-              attrs: {
-                role: "group",
-                "aria-label": "Button group with nested dropdown"
-              }
-            },
-            [
-              _c(
-                "div",
-                {
-                  staticClass: "btn-group col-md-12",
-                  attrs: { role: "group" }
-                },
-                [
-                  _vm._m(0),
-                  _vm._v(" "),
-                  _c(
-                    "div",
-                    {
-                      staticClass: "dropdown-menu",
-                      attrs: { "aria-labelledby": "btnGroupDrop1" }
-                    },
-                    [
-                      _c(
-                        "a",
-                        {
-                          staticClass:
-                            "d-none d-sm-inline-block dropdown-item shadow-sm",
-                          attrs: { href: "#" },
-                          on: {
-                            click: function($event) {
-                              $event.preventDefault()
-                              return _vm.importAttendees()
+  return _c("div", [
+    _c(
+      "div",
+      { staticClass: "card shadow mb-4" },
+      [
+        _c("div", { staticClass: "card-header py-3" }, [
+          _c("div", { staticClass: "row" }, [
+            _c(
+              "h6",
+              { staticClass: "m-0 font-weight-bold text-primary col-md-8" },
+              [_vm._v("All Attendees")]
+            ),
+            _vm._v(" "),
+            _c(
+              "div",
+              {
+                staticClass: "btn-group float-right col-md-4",
+                attrs: {
+                  role: "group",
+                  "aria-label": "Button group with nested dropdown"
+                }
+              },
+              [
+                _c(
+                  "div",
+                  {
+                    staticClass: "btn-group col-md-12",
+                    attrs: { role: "group" }
+                  },
+                  [
+                    _vm._m(0),
+                    _vm._v(" "),
+                    _c(
+                      "div",
+                      {
+                        staticClass: "dropdown-menu",
+                        attrs: { "aria-labelledby": "btnGroupDrop1" }
+                      },
+                      [
+                        _c(
+                          "a",
+                          {
+                            staticClass:
+                              "d-none d-sm-inline-block dropdown-item shadow-sm",
+                            attrs: { href: "#" },
+                            on: {
+                              click: function($event) {
+                                $event.preventDefault()
+                                return _vm.importAttendees()
+                              }
                             }
-                          }
-                        },
-                        [_vm._v(" Import Attendees")]
-                      ),
+                          },
+                          [_vm._v(" Import Attendees")]
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "a",
+                          {
+                            staticClass:
+                              "d-none d-sm-inline-block dropdown-item shadow-sm",
+                            attrs: { href: "#" },
+                            on: {
+                              click: function($event) {
+                                $event.preventDefault()
+                                return _vm.addAttendee()
+                              }
+                            }
+                          },
+                          [_vm._v(" Single Attendee")]
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "a",
+                          {
+                            staticClass:
+                              "d-none d-sm-inline-block dropdown-item shadow-sm",
+                            attrs: { href: "#" },
+                            on: {
+                              click: function($event) {
+                                $event.preventDefault()
+                                return _vm.GenDispToken()
+                              }
+                            }
+                          },
+                          [_vm._v(" Send Tokens")]
+                        )
+                      ]
+                    )
+                  ]
+                )
+              ]
+            )
+          ])
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "card-body" }, [
+          _c("div", { staticClass: "table-responsive" }, [
+            _c(
+              "table",
+              {
+                staticClass: "table table-bordered",
+                attrs: { id: "dataTable", width: "100%", cellspacing: "0" }
+              },
+              [
+                _vm._m(1),
+                _vm._v(" "),
+                _vm._m(2),
+                _vm._v(" "),
+                _c(
+                  "tbody",
+                  _vm._l(_vm.allAttendees, function(attendee, index) {
+                    return _c("tr", { key: index }, [
+                      _c("td", [_vm._v(_vm._s(index + 1))]),
                       _vm._v(" "),
-                      _c(
-                        "a",
-                        {
-                          staticClass:
-                            "d-none d-sm-inline-block dropdown-item shadow-sm",
-                          attrs: { href: "#" },
-                          on: {
-                            click: function($event) {
-                              $event.preventDefault()
-                              return _vm.addAttendee()
-                            }
-                          }
-                        },
-                        [_vm._v(" Single Attendee")]
-                      ),
+                      _c("td", { staticClass: "font-weight-bold" }, [
+                        _vm._v(_vm._s(attendee.name))
+                      ]),
                       _vm._v(" "),
-                      _c(
-                        "a",
-                        {
-                          staticClass:
-                            "d-none d-sm-inline-block dropdown-item shadow-sm",
-                          attrs: { href: "#" },
-                          on: {
-                            click: function($event) {
-                              $event.preventDefault()
-                              return _vm.GenDispToken()
+                      _c("td", [_vm._v(_vm._s(attendee.token))]),
+                      _vm._v(" "),
+                      _c("td", [_vm._v(_vm._s(attendee.mobile))]),
+                      _vm._v(" "),
+                      _c("td", [
+                        _c(
+                          "button",
+                          {
+                            staticClass: "btn btn-outline-warning btn-sm",
+                            on: {
+                              click: function($event) {
+                                return _vm.editAttendee(attendee)
+                              }
                             }
-                          }
-                        },
-                        [_vm._v(" Send Tokens")]
-                      )
-                    ]
-                  )
-                ]
-              )
-            ]
-          )
-        ])
-      ]),
-      _vm._v(" "),
-      _c("div", { staticClass: "card-body" }, [
-        _c("div", { staticClass: "table-responsive" }, [
-          _c(
-            "table",
-            {
-              staticClass: "table table-bordered",
-              attrs: {
-                id: "dataTable-attendee",
-                width: "100%",
-                cellspacing: "0"
-              }
-            },
-            [
-              _vm._m(1),
-              _vm._v(" "),
-              _vm._m(2),
-              _vm._v(" "),
-              _c(
-                "tbody",
-                _vm._l(_vm.allAttendees, function(attendee, index) {
-                  return _c("tr", { key: index }, [
-                    _c("td", [_vm._v(_vm._s(index + 1))]),
-                    _vm._v(" "),
-                    _c("td", { staticClass: "font-weight-bold" }, [
-                      _vm._v(_vm._s(attendee.name))
-                    ]),
-                    _vm._v(" "),
-                    _c("td", [_vm._v(_vm._s(attendee.token))]),
-                    _vm._v(" "),
-                    _c("td", [_vm._v(_vm._s(attendee.email))]),
-                    _vm._v(" "),
-                    _c("td", [
-                      _c(
-                        "button",
-                        {
-                          staticClass: "btn btn-outline-warning btn-sm",
-                          on: {
-                            click: function($event) {
-                              return _vm.editAttendee(attendee)
-                            }
-                          }
-                        },
-                        [_c("i", { staticClass: "text-yellow fas fa-edit" })]
-                      )
+                          },
+                          [_c("i", { staticClass: "text-yellow fas fa-edit" })]
+                        )
+                      ])
                     ])
-                  ])
-                }),
-                0
-              )
-            ]
-          )
-        ])
-      ]),
-      _vm._v(" "),
-      _c("add-attendee", { attrs: { eventId: _vm.eventId } }),
-      _vm._v(" "),
-      _c("import-attendees", { attrs: { eventId: _vm.eventId } })
-    ],
-    1
-  )
+                  }),
+                  0
+                )
+              ]
+            )
+          ])
+        ]),
+        _vm._v(" "),
+        _c("add-attendee", { attrs: { eventId: _vm.eventId } }),
+        _vm._v(" "),
+        _c("import-attendees", { attrs: { eventId: _vm.eventId } })
+      ],
+      1
+    )
+  ])
 }
 var staticRenderFns = [
   function() {
@@ -43457,7 +44121,7 @@ var staticRenderFns = [
       },
       [
         _c("i", { staticClass: "fas fa-users fa-sm text-white-50" }),
-        _vm._v(" Add Attendees\n                    ")
+        _vm._v(" Add Attendees\r\n                        ")
       ]
     )
   },
@@ -43571,6 +44235,8 @@ var render = function() {
                       ])
                     ]),
                     _vm._v(" "),
+                    _c("td", [_vm._v(_vm._s(poll.votes_count))]),
+                    _vm._v(" "),
                     _c("td", [
                       _vm._v(_vm._s(poll.status === 0 ? "CLOSE" : "OPEN"))
                     ]),
@@ -43629,6 +44295,8 @@ var staticRenderFns = [
         _vm._v(" "),
         _c("th", [_vm._v("Title")]),
         _vm._v(" "),
+        _c("th", [_vm._v("Votes")]),
+        _vm._v(" "),
         _c("th", [_vm._v("Status")]),
         _vm._v(" "),
         _c("th", [_vm._v("Action")])
@@ -43644,6 +44312,8 @@ var staticRenderFns = [
         _c("th", [_vm._v("SN")]),
         _vm._v(" "),
         _c("th", [_vm._v("Title")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Votes")]),
         _vm._v(" "),
         _c("th", [_vm._v("Status")]),
         _vm._v(" "),
@@ -43907,7 +44577,25 @@ var render = function() {
                             _vm._v(_vm._s(candidate.name))
                           ]),
                           _vm._v(" "),
-                          _c("p", [_vm._v("VOTES: " + _vm._s(candidate.votes))])
+                          _c("h5", [
+                            _vm._v("VOTES: "),
+                            _c(
+                              "span",
+                              { staticClass: "badge badge-secondary" },
+                              [_vm._v(_vm._s(candidate.votes))]
+                            ),
+                            _vm._v(" "),
+                            _c("span", { staticClass: "badge badge-info" }, [
+                              _vm._v(
+                                _vm._s(
+                                  _vm.candidateVotePercentage(
+                                    candidate.votes,
+                                    _vm.poll.votes.length
+                                  )
+                                )
+                              )
+                            ])
+                          ])
                         ])
                       ])
                     ]),
@@ -44036,39 +44724,43 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "card shadow mb-4" }, [
-    _vm._m(0),
-    _vm._v(" "),
-    _c("div", { staticClass: "card-body" }, [
-      _c("div", { staticClass: "table-responsive" }, [
-        _c(
-          "table",
-          {
-            staticClass: "table table-bordered",
-            attrs: { id: "dataTable-poll", width: "100%", cellspacing: "0" }
-          },
-          [
-            _vm._m(1),
-            _vm._v(" "),
-            _vm._m(2),
-            _vm._v(" "),
-            _c(
-              "tbody",
-              _vm._l(_vm.pollVotes, function(vote, index) {
-                return _c("tr", { key: index }, [
-                  _c("td", [_vm._v(_vm._s(index + 1))]),
-                  _vm._v(" "),
-                  _c("td", { staticClass: "font-weight-bold" }, [
-                    _vm._v(_vm._s(vote.candidate))
-                  ]),
-                  _vm._v(" "),
-                  _c("td", [_vm._v(_vm._s(vote.attendee))])
-                ])
-              }),
-              0
-            )
-          ]
-        )
+  return _c("div", [
+    _c("div", { staticClass: "card shadow mb-4" }, [
+      _vm._m(0),
+      _vm._v(" "),
+      _c("div", { staticClass: "card-body" }, [
+        _c("div", { staticClass: "table-responsive" }, [
+          _c(
+            "table",
+            {
+              staticClass: "table table-bordered",
+              attrs: { id: "dataTable", width: "100%", cellspacing: "0" }
+            },
+            [
+              _vm._m(1),
+              _vm._v(" "),
+              _vm._m(2),
+              _vm._v(" "),
+              _c(
+                "tbody",
+                _vm._l(_vm.pollVotes, function(vote, index) {
+                  return _c("tr", { key: index }, [
+                    _c("td", [_vm._v(_vm._s(index + 1))]),
+                    _vm._v(" "),
+                    _c("td", { staticClass: "font-weight-bold" }, [
+                      _vm._v(_vm._s(vote.candidate))
+                    ]),
+                    _vm._v(" "),
+                    _c("td", [_vm._v(_vm._s(vote.attendee))]),
+                    _vm._v(" "),
+                    _c("td", [_vm._v(_vm._s(vote.time))])
+                  ])
+                }),
+                0
+              )
+            ]
+          )
+        ])
       ])
     ])
   ])
@@ -44094,7 +44786,9 @@ var staticRenderFns = [
         _vm._v(" "),
         _c("th", [_vm._v("Candidate")]),
         _vm._v(" "),
-        _c("th", [_vm._v("Voter")])
+        _c("th", [_vm._v("Voter")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Recorded At")])
       ])
     ])
   },
@@ -44108,7 +44802,9 @@ var staticRenderFns = [
         _vm._v(" "),
         _c("th", [_vm._v("Candidate")]),
         _vm._v(" "),
-        _c("th", [_vm._v("Voter")])
+        _c("th", [_vm._v("Voter")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Recorded At")])
       ])
     ])
   }

@@ -1,4 +1,5 @@
 <template>
+<div>
     <div class="card shadow mb-4">
         <div class="card-header py-3">
 
@@ -6,12 +7,13 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable-poll" width="100%" cellspacing="0">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>SN</th>
                             <th>Candidate</th>
                             <th>Voter</th>             
+                            <th>Recorded At</th>             
                         </tr>
                     </thead>
                     <tfoot>
@@ -19,6 +21,7 @@
                             <th>SN</th>
                             <th>Candidate</th>
                             <th>Voter</th>
+                            <th>Recorded At</th>  
                         </tr>
                     </tfoot>
                     <tbody>
@@ -26,13 +29,14 @@
                             <td>{{index + 1}}</td>
                             <td class='font-weight-bold'>{{vote.candidate}}</td>
                             <td>{{vote.attendee}}</td>
+                            <td>{{vote.time}}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-
+</div>
 </template>
 
 <script>

@@ -1,16 +1,16 @@
 <template>
-    <div class="container-fluid" style="font-family:'century gothic'">
+    <div class="container-fluid"  style="font-family:'century gothic'">
         <!-- LOGIN AREA -->
         <div class="row justify-content-center mb-5" v-show="!grantAccess">
             <div class="col-md-8 col-sm-8">
 
                 <!-- Notification -->
-                <transition name="fade">
-                    <div v-show="flashAlert" class="alert alert-danger alert-dismisable fade show" role="alert">
+                <!-- <transition name="fade"> -->
+                    <div v-show="flashAlert" :class="alertType + ' alert alert-dismisable fade show'" role="alert">
                         <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                         <strong>{{this.message}}</strong>
                     </div>
-                </transition>
+                <!-- </transition> -->
 
                 <!-- Authentication -->
                 <div class="card card-default">
@@ -32,7 +32,7 @@
         <!-- ATTENDEE Details -->
         <div class="row mb-4" v-show="grantAccess">
             <!-- <span class="float-right"> -->
-                <button @click.prevent="logout" class="btn btn-primary text-white mb-2 float-right">
+                <button @click.prevent="logout" class="btn btn-danger text-white mb-2 float-right">
                     <i class="fas fa-sign-out-alt"></i> Logout</button>
             <!-- </span> -->
             
@@ -40,7 +40,6 @@
                 <li class="list-group-item">
                     <strong class="mr-4">WELCOME: {{attendee.name}}</strong> || 
                     <strong class="mr-4 ml-4">MOBILE: {{attendee.mobile}}</strong> || 
-                    <strong class="ml-4">EMAIL: {{attendee.email}} </strong>
                 </li>
             </ul>
         </div>
@@ -51,14 +50,14 @@
             <div class="col-md-12 col-sm-12" v-if="showPoll">
                 <!-- Notification -->
                 <!-- <transition name="fade"> -->
-                    <!-- <div v-show="flashAlert" class="alert alert-success alert-dismisable fade show" role="alert">
+                    <!-- <div v-show="flashAlert" :class="alertType + ' alert alert-dismisable fade show'" role="alert">
                         <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                         <strong>{{this.message}}</strong>
                     </div> -->
                 <!-- </transition> -->
 
-                <div class="card card-default">
-                    <div class="card-header bg-primary text-white"><h5>{{event.title}}</h5></div>
+                <div class="card card-default col-md-12 col-sm-12">
+                    <div class="card-header bg-success"><h5 class=" text-white font-weight-bold">{{event.title}}</h5></div>
 
                     <div class="card-body">
 
@@ -67,26 +66,26 @@
                         <!-- Actual Poll Display Starts-->
                         <div id="accordion">
                             <div class="card">
-                                <div class="card-header" id="headingTwo">
-                                    <h5 class="mb-0">
-                                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                            <h5>INSTRUCTIONS</h5>
+                                <div class="card-header p-0" id="headingTwo">
+                                    <h5 class="m-0 p-0">
+                                        <button class="btn btn-link" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        <span class="font-weight-bold text-danger h5">INSTRUCTIONS</span>
                                         </button>
                                     </h5>
                                 </div>
-                                <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordion">
-                                <div class="card-body font-weight-bold">
-                                   <p>Kindy click the title of each poll below to see its candidates, then click the <strong>"CAST VOTE"</strong> button next to your candidate of choice
+                                <div id="collapseTwo" class="collapse show text-justify" aria-labelledby="headingTwo" data-parent="#accordion">
+                                <div class="card-body font-weight-bold text-danger">
+                                   <p>Kindy click the title of each poll below to see its candidates, then click the "CAST VOTE" button next to your candidate of choice
                                         to cast your vote for that candidate. Note that you can only vote for one candidate per poll, clicking another button within
-                                        the same poll will change your previous vote.
+                                        the same poll will change your previous vote. After voting, kindly click the LOGOUT button at the top of this page to exit. Thank you.
                                    </p>
                                 </div>
                                 </div>
                             </div>
                             <div class="card" v-for="(poll, index) in event.polls" :key="index">
-                                <div class="card-header" id="headingOne">
+                                <div class="card-header p-0" id="headingOne">
                                     <h5 class="mb-0">
-                                        <button class="btn btn-link" data-toggle="collapse" v-bind:data-target="'#collapse'+poll.id" aria-expanded="true" aria-controls="collapseOne">
+                                        <button class="btn btn-link font-weight-bold" data-toggle="collapse" v-bind:data-target="'#collapse'+poll.id" aria-expanded="true" aria-controls="collapseOne">
                                         Vote for {{poll.title}}
                                         </button>
                                     </h5>
@@ -94,22 +93,59 @@
 
                                 <div v-bind:id="'collapse'+poll.id" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
 
-                                    <div v-show="flashAlert" :class="alertType+ ' col-md-10 alert alert-dismisable fade show'" role="alert">
+                                    <div v-show="flashAlert" :class="alertType+ ' col-md-12 cols-sm-12 alert alert-dismisable fade show'" role="alert">
                                         <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                                         <strong>{{message}}</strong>
                                     </div>
                             
-                                    <div class="card-body row">
+                                    <div class="card-body row" v-if="poll.type==1">
                                         <!-- Candidates Start-->
                                                 <div class="media mb-4 mr-4" v-for="(candidate, index) in poll.candidates" :key="index">
                                                     <div class="media-left">
                                                         <img src="/img/img_avatar1.png" class="media-object" style="width:64px">
                                                     </div>
                                                     <div class="media-body">
-                                                        <h6 class="media-heading">{{candidate.name}}</h6>
-                                                        <p><button class="btn btn-sm btn-primary mb-2" @click="castVote(poll, candidate.id)">Cast Vote</button></p>
+                                                        <h6 class="media-heading font-weight-bold">{{candidate.name}}</h6>
+                                                        <button class="btn btn-sm btn-success mb-2" @click="castVote(poll, candidate.id, event)" :disabled="btnText==''">
+                                                            <div v-show="btnText=='Sending...'" class="spinner-border spinner-border-sm" role="status">
+                                                                <span class="sr-only">Loading...</span>
+                                                            </div>
+                                                            {{btnText}}
+                                                        </button>
                                                     </div>
                                                 </div>
+                                                
+                                            <!-- Candidate Stop -->
+                                    </div>
+                                    <!-- CHOOSING MULTIPLE CANDIDATE -->
+                                    <div class="card-body" v-else>
+                                        <!-- Candidates Start-->
+                                        <h6 class="text-danger mb-4">You may select at most {{poll.max_candidate}} candidates from below.</h6>
+                                            <form @submit.prevent="multiCandidateVote(poll)" action="" method="post" class="row">
+                                                <div class="media mb-4 mr-4" v-for="(candidate, index) in poll.candidates" :key="index">                                              
+                                                    <div class="">
+                                                        <!-- <label :for="'candidate'+candidate.id"> -->
+                                                            <div class="media-left">
+                                                                <img src="/img/img_avatar1.png" class="media-object" style="width:64px">
+                                                            </div>
+                                                        <!-- </label> -->
+                                                            <div class="media-body">
+                                                                <input type="checkbox" @change="maxCandidate($event, poll.max_candidate)" v-model="multiChoicePoll.checkedCandidates" :name="candidate.id" :value="candidate.id" class="boxes">
+                                                            </div>
+                                                            <h6 class="media-heading font-weight-bold">{{candidate.name}}</h6>
+                                                
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-12">
+                                                    <button class="btn btn-sm btn-success mb-2" type="submit" :disabled="btnText=='Sending...' || disableBtn">
+                                                        <div v-show="btnText=='Sending...'" class="spinner-border spinner-border-sm" role="status">
+                                                            <span class="sr-only">Loading...</span>
+                                                        </div>
+                                                        {{btnText}}
+                                                    </button>
+                                                </div>
+                                            </form>
                                             <!-- Candidate Stop -->
                                     </div>
                                 </div>
@@ -160,6 +196,13 @@ export default {
         }
     },
 
+    computed: {
+        // checkTotalCandidate: function($event){
+        //     this.
+        //     }
+        // }
+    },
+
     data()
     {
         return {
@@ -173,13 +216,19 @@ export default {
             'alertType': '',
             'questionAlert': '',
             'baseURL': process.env.MIX_APP_URL,
-            'lsKey': 'conf'+this.event.uid
+            'lsKey': 'conf'+this.event.uid,
+            'btnText': 'CAsT VOTE',
+            'disableBtn': false,
+            'multiChoicePoll': {
+                'checkedCandidates': Array()
+            }
         }
     },
 
     methods: {
-        castVote(poll, candidateId)
+        castVote(poll, candidateId, event)
         {
+            this.btnText = 'Sending...';
             axios.post('/api/vote', {
                 'poll_uid': poll.uid,
                 'candidate': candidateId,
@@ -189,13 +238,55 @@ export default {
             .then( response => {
                 if (response.data.status === 200) {
                     this.alertType = 'alert-success';
-                    this.showAlert(response.data.message, this.alertType, 5000);
+                    this.showAlert(response.data.message, this.alertType, 4000);
+                    this.btnText = 'CAST VOTE';
                 }
                 else{
                     this.alertType = 'alert-danger';
-                    this.showAlert(response.data.message, this.alertType, 5000);
+                    this.showAlert(response.data.message, this.alertType, 4000);
                 }
             }).catch( err => console.log('Something went wrong'));
+        },
+
+        multiCandidateVote(poll)
+        {
+            if (this.multiChoicePoll.checkedCandidates.length == 0 || this.multiChoicePoll.checkedCandidates.length > poll.max_candidate) {
+                this.showAlert('Sorry, you may select at most '+poll.max_candidate+' candidates.', 'alert-danger', 5000);
+            }else{
+                const data = new FormData();
+                data.append('candidates', this.multiChoicePoll.checkedCandidates);
+                data.append('poll_uid', poll.uid);
+                data.append('applc', this.attendee.uid,);
+                data.append('misc', this.event.uid+'_'+this.event.id);
+                axios.post('/api/vote/multiple', data)
+                .then(response => {
+                    if (response.status == 200) {
+                        this.showAlert(response.data.message, 'alert-success', 5000);
+                    }else{
+                        if(response.data.status == 403){
+                            this.showAlert(response.data.message, 'alert-danger', 5000);
+                            this.logout();
+                        }else{
+                            this.showAlert(response.data.message, 'alert-danger', 5000);
+                        }
+                    }
+                    
+                })
+                .catch( err => console.log(err));
+            }
+            
+        },
+
+        maxCandidate(e, pollMaxCandidate){
+            const checkboxes = document.getElementsByClassName('boxes');
+                if (this.multiChoicePoll.checkedCandidates.length > pollMaxCandidate) {
+                    this.disableBtn = true;
+                    this.showAlert('Sorry, you may select at most '+pollMaxCandidate+' candidates.', 'alert-danger', 5000);
+                }else{
+                    this.disableBtn = false;
+                }
+
+            
         },
 
         showAlert(message, className, time){
@@ -251,7 +342,7 @@ export default {
                             this.showAlert('Oops! you can only login from one device, logout from other device inorder to login here.', 'alert-danger', 8000);
                             }
                         }
-                    }else if(response.data.status == 409){
+                    }else if(response.data.status == 404){
                         this.showAlert(response.data.message, 'alert-danger', 10000);
                     }else{
                         this.showAlert(response.data.message, 'alert-danger', 10000);
@@ -263,21 +354,27 @@ export default {
                 this.showAlert('Please enter your token to continue.', 'alert-danger', 10000);
             }
                 
-            },
+        },
 
-            logout(){
-                axios.post('/attendee/logout', {
-                    'attendee': this.attendee.id,
-                    'event_id': this.event.id
-                })
-                .then(()=>{
+        logout(){
+            axios.post('/attendee/logout', {
+                'attendee': this.token, //we're not sending ID in Attendee Resource, so we use token which another unique field in votesessions 
+                'event_id': this.event.id
+            })
+            .then(response =>{
+                console.log(response.status);
+                if (response.status == 200) {
                     localStorage.removeItem('exchange_confd');
                     
                     this.grantAccess = false;
                     this.attendee = null;
                     location.reload();
-                })
-            },
+                }else{
+                    this.showAlert(response.data.message, 'alert-danger', 10000);
+                }
+                
+            })
+        },
             
     }
 }

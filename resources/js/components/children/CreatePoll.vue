@@ -45,6 +45,25 @@
                                     <span class="help text-danger" v-if="errors.has('short_title')" v-text="errors.get('short_title')"></span>
                                 </div>
                             </div>
+                            <!-- TYPE -->
+                            <div class="col-10 col-md-12 pr-0">
+                                <div class="md-formn">
+                                    <select name="type" v-model="poll.type" class="mdb-select md-form form-control required" aria-required="true" required>
+                                        <option value="" disabled selected>Choose Type</option>
+                                        <option value="1">Normal</option>
+                                        <option value="2">Multi Candidate</option>
+                                    </select>
+                                    <span class="help text-danger" v-if="errors.has('type')" v-text="errors.get('type')"></span>
+                                </div>
+                            </div>
+                            <!-- MAX CHOICE -->
+                            <div class="col-10 col-md-12 pr-0" v-if="poll.type == 2">
+                                <div class="md-form">
+                                    <input name="max_candidate" id="mce-MAXCANDIDATE" v-model="poll.max_candidate" type="number" class="form-control">
+                                    <label for="mce-MAXCANDIDATE" class="">Max Candidate</label>
+                                    <span class="help text-danger" v-if="errors.has('max_candidate')" v-text="errors.get('max_candidate')"></span>
+                                </div>
+                            </div>
                             <!-- MISC -->
                             <div class="col-10 col-md-12 pr-0">
                                 <div class="md-form">
@@ -135,6 +154,8 @@ class Errors {
       this.id = poll.id || null,
       this.title = poll.title || '',
       this.short_title = poll.short_title || '';
+      this.type = poll.type || '';
+      this.max_candidate = poll.max_candidate || '';
       this.misc = poll.misc || '',
       this.misc1 = poll.misc1 || '',
       this.misc2 = poll.misc2 || '',

@@ -81,14 +81,14 @@ class AttendeeController extends Controller
                 return response()->json([
                     'message' => 'This event is not open, please try again later.',
                     'status' => SymfonyResponse::HTTP_UNAUTHORIZED,
-                ]);
+                ],500);
             }
             
         }else {
             return response()->json([
                 'message' => 'Event not found.',
                 'status' => SymfonyResponse::HTTP_NOT_FOUND,
-            ]);
+            ],500);
         }
     }
 
@@ -109,7 +109,7 @@ class AttendeeController extends Controller
     //Delete session key for online attendees
     public function endSession(Request $request)
     {
-        $session = Votesession::where(['attendee_id'=> $request->attendee, 'event_id'=>$request->event_id])->first();
+        $session = Votesession::where(['token'=> $request->attendee, 'event_id'=>$request->event_id])->first();
         if ($session) {
             $session->delete();
             return response()->json('Thank You! for joining.', 200);

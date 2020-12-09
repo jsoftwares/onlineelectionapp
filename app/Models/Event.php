@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
-    protected $fillable = ['vote_online'];
+    protected $fillable = ['status', 'vote_online'];
     protected $dates = ['deleted_at'];
 
     public function company()

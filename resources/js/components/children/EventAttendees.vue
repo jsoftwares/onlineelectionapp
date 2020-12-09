@@ -1,4 +1,5 @@
 <template>
+<div>
     <div class="card shadow mb-4">
         <div class="card-header py-3">
             <div class="row">
@@ -24,7 +25,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable-attendee" width="100%" cellspacing="0">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>SN</th>
@@ -48,7 +49,7 @@
                             <td>{{index + 1}}</td>
                             <td class='font-weight-bold'>{{attendee.name}}</td>
                             <td>{{attendee.token}}</td>
-                            <td>{{attendee.email}}</td>
+                            <td>{{attendee.mobile}}</td>
                             <td>
                                 <button @click="editAttendee(attendee)"  class='btn btn-outline-warning btn-sm'><i class="text-yellow fas fa-edit"></i></button>
                             </td>
@@ -60,7 +61,7 @@
         <add-attendee :eventId="eventId"></add-attendee>
         <import-attendees :eventId="eventId"></import-attendees>
     </div>
-
+</div>
 </template>
 
 <script>

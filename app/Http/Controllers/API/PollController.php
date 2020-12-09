@@ -32,6 +32,8 @@ class PollController extends Controller
             'title' => 'required|max:100',
             'short_title' => 'required|max:11',
             'event_id' => 'required|numeric',
+            'type' => 'required|numeric',
+            'max_candidate' => 'nullable|numeric',
             'misc' => 'max:60',
             'misc1' => 'max:60',
             'misc2' => 'max:60',
@@ -43,6 +45,8 @@ class PollController extends Controller
         $poll->title = strtoupper($request->title);
         $poll->short_title = strtoupper($request->short_title);
         $poll->status = 0;
+        $poll->type = $request->type;
+        $poll->max_candidate = $request->filled('max_candidate') ? $request->max_candidate : '';
         $poll->misc = $request->misc;
         $poll->misc1 = $request->misc1;
         $poll->misc2 = $request->misc2;
@@ -98,9 +102,9 @@ class PollController extends Controller
     }
 
     // Return collection of polls data with relationship & distant relationships
-    public function pollsvotes()
+    public function pollsvotes(Request $request)
     {
-        $polls = Poll::all();
+        $polls = Poll::where('event_id',$request->event_id)->get();
         return ResourcesPoll::collection($polls);
     }
 

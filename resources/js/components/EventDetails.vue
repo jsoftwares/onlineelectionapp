@@ -7,7 +7,11 @@
         <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
         <strong>{{message}}</strong>
     </div>
-
+    <div>
+        <button @click="openCloseEvent()"  :class="btnColor+' btn btn-sm'">
+            {{event.status ? 'active' : 'inactive'}}
+        </button>
+    </div>
     <div class="">
     <!-- Nav tabs -->
         <ul class="nav nav-tabs mt-2">
@@ -51,7 +55,7 @@ export default {
             this.showAlert('Attendee created successfully.', 4000);
         });
         this.$on('importQueued', (result) => {
-            this.showAlert(result.messagge, 5000);
+            this.showAlert(result.message, 5000);
         });
     },
 
@@ -63,6 +67,7 @@ export default {
     data() {
         return {
             message:'',
+            btnColor: this.event.status ? 'btn-success' : 'btn-danger', //sets at page mount
             showMessage: false
         }
     },
@@ -74,6 +79,22 @@ export default {
 
         createPoll(){
             this.$emit('nnn');
+        },
+
+        openCloseEvent()
+        {
+            axios.put('/event/'+this.event.id, {
+                'status': Number(!this.event.status)
+            })
+            .then( response => {
+                if (response.status == 200) {
+                    this.event.status = response.data.mode;
+                    this.event.status == 1 ? this.btnColor ='btn-success' : this.btnColor ='btn-danger';
+                    // this.message = response.data.message;
+                    // this.showAlert(this.message, 4000)
+                }
+            })
+            .catch(err => console.log(err));
         },
 
         showAlert(message, time){

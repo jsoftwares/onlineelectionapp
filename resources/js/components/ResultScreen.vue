@@ -2,7 +2,7 @@
     <div class="container-fluid" style="font-family:'century gothic'">
         <div class="card card-default">
             <div class="card-header bg-primary text-white">
-                <h5>POLLS RESULT FOR {{event.title}}</h5>
+                <h5>LIVE RESULTS FOR {{event.title}}</h5>
             </div>
 
             <div class="card-body">
@@ -13,12 +13,12 @@
                 <div id="accordion">
 
                     <div class="card" v-for="(poll, index) in polls" :key="index">
-                        <div class="card-header" id="headingOne">
-                            <h5 class="mb-0">
+                        <div class="card-header m-0 p-0" id="headingOne">
+                            
                                 <button class="btn btn-link" data-toggle="collapse" v-bind:data-target="'#collapse'+poll.id" aria-expanded="true" aria-controls="collapseOne">
-                                Vote for {{poll.title}}
+                                <h5 class="mb-0 font-weight-bold">Vote for {{poll.title}}</h5>
                                 </button>
-                            </h5>
+ 
                         </div>
 
                         <div v-bind:id="'collapse'+poll.id" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
@@ -30,9 +30,11 @@
                                                 <img src="/img/img_avatar1.png" class="media-object" style="width:60px">
                                             </div>
                                             <div class="media-body">
-                                                <h6 class="media-heading font-weight-bold">{{candidate.name}}</h6>
-                                                <p><strong>VOTES COUNT: {{candidate.votes}}</strong></p>
-                                                <p><strong>STATUS: {{candidate.winner}} - ({{candidate.via}})</strong></p>
+                                                <h5 class="media-heading font-weight-bold">{{candidate.name}}</h5>
+                                                <h4>VOTES: <span class="badge badge-secondary">{{candidate.votes}}</span> <span class="badge badge-info">{{candidateVotePercentage(candidate.votes, poll.votes.length)}}</span></h4>
+                                                <!-- <p><strong>STATUS: {{candidate.winner}} - ({{candidate.via}})</strong></p> -->
+                                                <!-- <p>{{candidateVotePercentage(candidate.votes, poll.votes.length)}}</p> -->
+                                                
                                             </div>
                                         </div>
                                     <!-- Candidate Stop -->
@@ -59,9 +61,14 @@ export default {
 
     created()
     {
-        setInterval(() => {
-            this.loadElectionData();
-        }, 3000);
+        let getData;
+        if (this.event.status == 1) {
+            getData = setInterval(() => {       
+                this.loadElectionData();
+            }, 3000);
+        }else{
+            clearInterval(getData)
+        }
     },
 
     data()
@@ -74,12 +81,17 @@ export default {
     methods: {
         loadElectionData()
         {
-            axios.post('/api/polls/votes', {'event_id': this.event.id})
+            axios.post('/api/eventpolls/votes', {'event_id': this.event.id})
             .then( response => {
-                console.log(response.data);
                 this.polls = response.data.data;
             })
             .catch( err =>console.log(err));
+        },
+
+        candidateVotePercentage(candidateVotesCount, pollVotesCount)
+        {
+            let percentage = (candidateVotesCount/pollVotesCount) * 100;
+            return percentage.toFixed(0)+'%';
         }
     }
 }

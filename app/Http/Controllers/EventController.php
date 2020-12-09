@@ -107,7 +107,20 @@ class EventController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $event = Event::find($id);
+        // dd($event);
+        if ($event != null) {
+            $input = $request->input();
+            $update = $event->update($input);
+            if ($update) {
+                return response()->json([
+                    'message' => 'Event update successful.',
+                    'status' => 200,
+                    'mode' => $event->fresh()->status
+                ], 200);
+            }
+        }
+        
     }
 
     /**
@@ -162,7 +175,7 @@ class EventController extends Controller
             return view('event.online_poll')->with(['event' => $event]);
         }
         else {
-            return view('error')->with(['message' => 'This event is not yet open, try to login in later']);
+            return '<h1 style="color:red">SORRY VOTING FOR THIS EVENT IS INACTIVE.</h1>';
         }
     }
 

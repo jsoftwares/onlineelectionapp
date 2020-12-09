@@ -50,7 +50,7 @@ class AttendeeController extends Controller
         $attendee->uid = $uid;
         $attendee->name = strtoupper($request->name);
         $attendee->email = strtolower($request->email);
-        $attendee->mobile = $this->addCountryCodeToGSM($request->mobile);
+        $attendee->mobile = $request->filled('mobile') ? $this->addCountryCodeToGSM($request->mobile) : null;
         // $attendee->token = $token;
         $attendee->misc = $request->misc;
         $attendee->misc1 = $request->misc1;

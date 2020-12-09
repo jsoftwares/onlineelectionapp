@@ -10,7 +10,7 @@
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Scripts -->
-    <script src="{{ asset('js/app.js') }}" defer></script>
+    <!-- <script src="{{ asset('js/app.js') }}" defer></script> -->
 
     <link href="{{asset('vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet" type="text/css">
     <!-- Fonts -->
@@ -34,7 +34,7 @@
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
+                    {{ config('app.name', 'Exchange') }}
                 </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
@@ -91,16 +91,18 @@
         </main>
     </div>
     
-    <script src="{{asset('vendor/jquery/jquery.min.js')}}"></script>
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script type="text/javascript" src="{{asset('vendor/mdb/js/new/popper.min.js')}}"></script> -->
-    <script src="{{asset('vendor/bootstrap/js/bootstrap.min.js')}}"></script>
-    <!-- <script type="text/javascript" src="{{asset('vendor/mdb/js/bootstrap.min.js')}}"></script> -->
+    <script src="{{ asset('js/app.js') }}"></script>
+    <!-- BELOW are already inside app.js as scalfolded in setup -->
+        <!-- <script src="{{asset('vendor/jquery/jquery.min.js')}}"></script> -->
+        <!-- <script src="{{asset('vendor/bootstrap/js/bootstrap.min.js')}}"></script> -->
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script> -->
+        <!-- <script type="text/javascript" src="{{asset('vendor/mdb/js/new/popper.min.js')}}"></script> -->
+        <!-- <script type="text/javascript" src="{{asset('vendor/mdb/js/bootstrap.min.js')}}"></script> -->
     <!-- Core plugin JavaScript-->
-    <script src="{{asset('vendor/jquery-easing/jquery.easing.min.js')}}"></script>
+    <!-- <script src="{{asset('vendor/jquery-easing/jquery.easing.min.js')}}"></script> -->
     <!-- Custom scripts for all pages-->
-    <script src="{{asset('js/sb-admin-2.min.js')}}"></script>
     <script type="text/javascript" src="{{asset('vendor/mdb/js/mdb.min.js')}}"></script>
+    <script src="{{asset('js/sb-admin-2.min.js')}}"></script>
     <!-- Page level plugins -->
     <script src="{{asset('vendor/datatables/jquery.dataTables.min.js')}}"></script>
     <script src="{{asset('vendor/datatables/dataTables.bootstrap4.min.js')}}"></script>

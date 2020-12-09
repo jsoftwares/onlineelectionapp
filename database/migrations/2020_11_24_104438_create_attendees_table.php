@@ -19,13 +19,14 @@ class CreateAttendeesTable extends Migration
             $table->string('token', 10);
             $table->string('email')->nullable();
             $table->string('mobile')->nullable();
+            $table->tinyInteger('attendance')->default(0);
+            $table->foreignId('event_id')->constrained()->onDelete('cascade');
             $table->string('misc')->nullable();
             $table->string('misc1')->nullable();
             $table->string('misc2')->nullable();
             $table->string('misc3')->nullable();
             $table->string('misc4')->nullable();
             $table->string('misc5')->nullable();
-            $table->foreignId('event_id')->constrained()->onDelete('cascade');
             $table->softDeletes('deleted_at', 0);
             $table->timestamps();
         });

@@ -26,6 +26,7 @@ class CandidateController extends Controller
      */
     public function store(Request $request)
     {
+        dd($request->photo);
         $request->validate([
             'uid' => 'unique:candidates',
             'name' => 'string|required|max:90',

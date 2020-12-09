@@ -7,7 +7,7 @@
         aria-hidden="true" data-backdrop="false">
             <div class="modal-dialog modal-full-height modal-right modal-notify modal-info" role="document">
                 <div class="modal-content">
-                    <form action="" method="post" @submit.prevent="editing ? updateCandidate(): storeCandidate()" @keydown="errors.clear($event.target.name)">
+                    <form action="" method="post" @change="uploadPhoto" @submit.prevent="editing ? updateCandidate(): storeCandidate()" @keydown="errors.clear($event.target.name)">
                         <!--Header-->
                         <div class="modal-header">
                             <p class="heading lead">Add New Candidate for {{poll.title}}
@@ -21,7 +21,7 @@
                         <!--Body-->
                         <div class="modal-body">
                             <div class="text-center">
-                            <!-- <i class="far fa-file-alt fa-4x mb-3 animated rotateIn"></i> -->
+                            <!-- <i class="far fa-PHOTO-alt fa-4x mb-3 animated rotateIn"></i> -->
                             <p>
                                 <strong>Fill in details.</strong>
                             </p>
@@ -50,6 +50,14 @@
                                     <input name="mobile" id="mce-MOILE" v-model="candidate.mobile" type="number" class="form-control">
                                     <label for="mce-MOBILE" class="">Mobile</label>
                                     <span class="help text-danger" v-if="errors.has('mobile')" v-text="errors.get('mobile')"></span>
+                                </div>
+                            </div>
+                            <!-- PHOTO -->
+                            <div class="col-10 col-md-12 pr-0">
+                                <label for="mce-NAME" class="">Photo</label><br>
+                                <span class="help text-danger" v-if="errors.has('photo')" v-text="errors.get('photo')"></span>
+                                <div class="md-form">
+                                    <input name="photo" id="mce-PHOTO" type="file" class="form-control">
                                 </div>
                             </div>
                             <!-- MISC -->
@@ -153,6 +161,7 @@ class Candidate
         this.name = candidate.name || '',
         this.email = candidate.email || '';
         this.mobile = candidate.mobile || '',
+        this.photo = candidate.photo || '',
         this.misc = candidate.misc || '',
         this.misc1 = candidate.misc1 || '',
         this.misc2 = candidate.misc2 || '',
@@ -165,11 +174,11 @@ export default {
     
     mounted() {
         this.$parent.$on('addNewCandidate', (poll) => {
-            console.log(poll);
             this.editing = false;
             this.poll = poll;
             this.candidate = new Candidate({});
             this.candidate.poll_id = poll.id;
+            // this.candidate.photo = document.getElementById('mce-PHOTO').files[0];
             $('#addCandidate').modal();
 
         })
@@ -180,13 +189,16 @@ export default {
             candidate: {},
             poll: {},
             errors: new Errors(),
-            editing: false
+            editing: false,
+            photo: null
         }
     },
 
     methods: {
         storeCandidate()
         {
+            this.candidate.photo = this.photo;
+            console.log(document.getElementById('mce-PHOTO').files[0]);
             axios.post('/api/candidate', this.candidate)
             .then(response => {
                 this.$parent.$emit('candidateCreated', (response.data));
@@ -194,6 +206,12 @@ export default {
             }).catch( err => {
                 this.errors.record(err.response.data.errors);
             });
+        },
+        uploadPhoto()
+        {
+            this.photo = event.target.files[0];
+            // this.photo = document.getElementById('mce-PHOTO').files[0];
+            console.log(this.photo);
         }
     }
 }

@@ -36,14 +36,6 @@
                                     <input name="file" id="mce-FILE" type="file" class="form-control required" aria-required="true" required>
                                 </div>
                             </div>
-                            <!-- EMAIL -->
-                            <!-- <div class="col-10 col-md-12 pr-0">
-                                <div class="md-form">
-                                    <input name="email" id="mce-EMAIL" v-model="attendee.email" type="email" class="form-control">
-                                    <label for="mce-EMAIL" class="">Email</label>
-                                    <span class="help text-danger" v-if="errors.has('email')" v-text="errors.get('email')"></span>
-                                </div>
-                            </div> -->
 
                         </div>
 
@@ -122,8 +114,10 @@ export default {
 
             axios.post('/api/attendee/import', data)
             .then(response => {
-                this.$parent.$emit('importQueued', (response.data));
-                $('#importAttendees').modal('hide');
+                if (response.status == 200) {
+                    this.$parent.$emit('importQueued', (response.data));
+                    $('#importAttendees').modal('hide');   
+                }
             }).catch( err => {
                 this.errors.record(err.response.data.errors);
             });

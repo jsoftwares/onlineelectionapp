@@ -17,7 +17,8 @@ class Vote extends JsonResource
         return [
             'id' => $this->id,
             'candidate' => $this->candidate->name,
-            'attendee' => $this->attendee->name
+            'attendee' => $this->attendee->name,
+            'time' => date($this->updated_at)
         ];
     }
 }

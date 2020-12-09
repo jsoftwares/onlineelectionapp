@@ -1,6 +1,5 @@
 <template>
 <div>
-    <button class="btn btn-sm btn-primary mb-2" @click="createPoll()">New Poll</button>
     
     <div class="clearfix"></div>
     <!-- DataTales Example -->
@@ -8,8 +7,7 @@
         <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
         <strong>{{message}}</strong>
     </div>
-
-    <div class="container-fluid">
+    <div class="container">
             <h4>{{poll.title}}</h4>
     <!-- Nav tabs -->
         <ul class="nav nav-tabs mt-4">

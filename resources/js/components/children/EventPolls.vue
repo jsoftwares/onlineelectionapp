@@ -14,6 +14,7 @@
                         <tr>
                             <th>SN</th>
                             <th>Title</th>
+                            <th>Votes</th>
                             <th>Status</th>
                             <th>Action</th>                     
                         </tr>
@@ -22,6 +23,7 @@
                         <tr>
                             <th>SN</th>
                             <th>Title</th>
+                            <th>Votes</th>
                             <th>Status</th>
                             <th>Action</th> 
                         </tr>
@@ -30,6 +32,7 @@
                         <tr v-for="(poll, index) in allPolls" :key='index'>
                             <td>{{index + 1}}</td>
                             <td class='font-weight-bold'><a :href="'/poll/'+poll.id">{{poll.title}}</a></td>
+                            <td>{{poll.votes_count}}</td>
                             <td>{{poll.status === 0 ? 'CLOSE' : 'OPEN'}}</td>
                             <td>
                                 <button @click="editPoll(poll)"  class='btn btn-outline-warning btn-sm'><i class="text-yellow fas fa-edit"></i></button>

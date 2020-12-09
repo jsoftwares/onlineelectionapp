@@ -36,7 +36,8 @@
                                     </div>
                                     <div class="media-body">
                                         <h6 class="media-heading">{{candidate.name}}</h6>
-                                        <p>VOTES: {{candidate.votes}}</p>
+                                        <h5>VOTES: <span class="badge badge-secondary">{{candidate.votes}}</span> <span class="badge badge-info">{{candidateVotePercentage(candidate.votes, poll.votes.length)}}</span></h5>
+                                        <!-- <p>VOTES: {{candidate.votes}}</p> -->
                                     </div>
                                 </div>
                             </td>
@@ -89,6 +90,11 @@ export default {
                 'candidate_id': candidate.id,
                 'poll': candidate.poll_id
             }).then( response ).catch( err => console.log(err));
+        },
+        candidateVotePercentage(candidateVotesCount, pollVotesCount)
+        {
+            let percentage = (candidateVotesCount/pollVotesCount) * 100;
+            return percentage.toFixed(0)+'%';
         }
     }
 

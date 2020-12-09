@@ -1,12 +1,12 @@
     <!-- Sidebar -->
-    <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color: #031B4D;">
+    <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color: #3d5869;">
 
       <!-- Sidebar - Brand -->
       <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ url('/home') }}">
         <div class="sidebar-brand-icon rotate-n-15">
           <i class="fas fa-laugh-wink"></i>
         </div>
-        <div class="sidebar-brand-text mx-3">EventMan | App <sup>v1</sup></div>
+        <div class="sidebar-brand-text mx-1">zenter | Vote <sup>v1</sup></div>
       </a>
 
       <!-- Divider -->
