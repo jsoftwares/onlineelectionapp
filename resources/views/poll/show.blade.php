@@ -1,8 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-    <div class="container-fluid">
-        <h1 class="h3 mb-2 text-gray-800">Poll Details</h1>
+    <div class="container-fluid m-0 p-0">
             <poll-details :poll="{{json_encode($poll)}}"></poll-details>
     </div>
     

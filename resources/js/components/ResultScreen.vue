@@ -7,13 +7,11 @@
 
             <div class="card-body">
 
-                <!-- <br> -->
-
                 <!-- Actual Poll Display Starts-->
                 <div id="accordion">
 
                     <div class="card" v-for="(poll, index) in polls" :key="index">
-                        <div class="card-header m-0 p-0" id="headingOne">
+                        <div class="card-header m-0 p-0" id="headingOne" v-show="poll.candidates.length>0">
                             
                                 <button class="btn btn-link" data-toggle="collapse" v-bind:data-target="'#collapse'+poll.id" aria-expanded="true" aria-controls="collapseOne">
                                 <h5 class="mb-0 font-weight-bold">Vote for {{poll.title}}</h5>

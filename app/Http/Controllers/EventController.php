@@ -186,31 +186,4 @@ class EventController extends Controller
         return view('poll.result_screen', ['event'=>$event]);
     }
 
-
-    public function pollsResults(Request $request)
-    {
-        $request->validate([
-            'event__uid' => 'required|string'
-        ]);
-
-        try {
-
-            //Check if event exist an it is open
-            $event = Event::whereUid($request->event_uid)->first();
-            if ($event && $event->status == 1) {
-                //Load needed event relationship
-                $event = $event->with(['polls']);
-                //chain to resources
-                // Return response
-            }else {
-                # code...
-            }
-
-            
-
-        } catch (\Throwable $th) {
-            //throw $th;
-        }
-        
-    }
 }

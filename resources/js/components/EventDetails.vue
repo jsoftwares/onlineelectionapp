@@ -28,7 +28,7 @@
             <div class="tab-pane active" id="polls">
                 <event-polls :polls="event.polls" :eventId="event.id"></event-polls>
             </div>
-            <div class="tab-pane  fade" id="attendees">
+            <div class="tab-pane fade" id="attendees">
                 <event-attendees :eventId="event.id"></event-attendees>
             </div>
         </div>

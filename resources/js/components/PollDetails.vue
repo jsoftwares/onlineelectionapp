@@ -2,6 +2,7 @@
 <div>
     
     <div class="clearfix"></div>
+    <a :href="'/event/'+poll.event_id"  class='btn btn-primary btn-sm'>back</a>
     <!-- DataTales Example -->
     <div v-show="showMessage" class="alert alert-success alert-dismisable fade show" role="alert">
         <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
@@ -39,7 +40,9 @@ export default {
     props: ['poll'],
 
     mounted() {
-        
+        this.$on('winnerDeclared', candidateName => {
+            this.showAlert(candidateName+ ' has been declared winner.', 'alert-success', 5000);
+        })
     },
 
     components: {
@@ -50,7 +53,8 @@ export default {
     data() {
         return {
             message:'',
-            showMessage: false
+            showMessage: false,
+            className: ''
         }
     },
 
@@ -59,13 +63,15 @@ export default {
         createPoll()
         {},
 
-        showAlert(message, time){
+        showAlert(message, className, time){
             this.message = message;
             this.showMessage = true;
+            this.className = className;
             
             setInterval(() => {
                 this.showMessage = false;
                 this.message = '';
+                this.className = '';
             }, time);
         }
     }

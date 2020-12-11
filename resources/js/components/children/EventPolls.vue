@@ -3,7 +3,19 @@
         <div class="card-header py-3">
             <div class="row">
                 <h6 class="m-0 font-weight-bold text-primary col-md-9">All Polls</h6>
-                <button class="btn btn-sm btn-primary m-0 float-right col-md-3" @click="createPoll()">New Poll</button>
+                
+                <div class="btn-group float-right col-md-3 p-0" role="group" aria-label="Button group with nested dropdown">
+                    <div class="btn-group col-md-12 col-sm-12 p-0" role="group">
+                        <button id="btnGroupDrop1" type="button" class="d-none d-sm-inline-block btn btn-sm btn-primary m-0 shadow-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-poll fa-sm text-white-50"></i> Manage Polls
+                        </button>
+                        <div class="dropdown-menu col-md-12" aria-labelledby="btnGroupDrop1">
+                            <a href="#" @click.prevent="createPoll()" class="d-none d-sm-inline-block dropdown-item shadow-sm"> New Poll</a>
+                            <a :href="'/event/pollscreen/'+eventId" target="_blank" class="d-none d-sm-inline-block dropdown-item shadow-sm"> Live Result</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- <button class="btn btn-sm btn-primary m-0 float-right col-md-3" @click="createPoll()">New Poll</button> -->
             </div>
             
         </div>

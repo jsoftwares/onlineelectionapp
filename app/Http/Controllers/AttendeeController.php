@@ -67,7 +67,7 @@ class AttendeeController extends Controller
                         return response()->json([
                             'message' => 'Invalid token.',
                             'status' => SymfonyResponse::HTTP_NOT_FOUND,
-                        ], 404);
+                        ]);
                     }
                 }else {
                     return response()->json([
@@ -81,7 +81,7 @@ class AttendeeController extends Controller
                 return response()->json([
                     'message' => 'This event is not open, please try again later.',
                     'status' => SymfonyResponse::HTTP_UNAUTHORIZED,
-                ],500);
+                ]);
             }
             
         }else {

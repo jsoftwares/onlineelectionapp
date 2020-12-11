@@ -21,9 +21,7 @@ Route::get('/', function () {
 
 Auth::routes();
 
-// Find attendee and also generate vote session.
-Route::post('/attendee/login', 'AttendeeController@findAttendeeByToken');
-Route::post('/attendee/logout', 'AttendeeController@endSession');
+
 Route::get('/event/decide-online/{event_id}', 'EventController@onlinePoll')->name('vote_online');
 
 Route::get('/home', 'HomeController@index')->name('home');

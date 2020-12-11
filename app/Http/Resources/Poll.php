@@ -20,7 +20,7 @@ class Poll extends JsonResource
             'title' => $this->title,
             'short_title' => $this->short_title,
             'status' => $this->status,
-            // 'photo' => $this->photo,
+            'winner' => $this->candidate_id,
             'event_id' => $this->event_id,
             'candidates' => Candidate::collection($this->candidates),
             'votes' => Vote::collection($this->votes),

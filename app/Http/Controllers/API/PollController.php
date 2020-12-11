@@ -46,7 +46,7 @@ class PollController extends Controller
         $poll->short_title = strtoupper($request->short_title);
         $poll->status = 0;
         $poll->type = $request->type;
-        $poll->max_candidate = $request->filled('max_candidate') ? $request->max_candidate : '';
+        $poll->max_candidate = $request->filled('max_candidate') ? $request->max_candidate : null;
         $poll->misc = $request->misc;
         $poll->misc1 = $request->misc1;
         $poll->misc2 = $request->misc2;
@@ -118,38 +118,24 @@ class PollController extends Controller
     public function declarewinner(Request $request)
     {
         $request->validate([
-            'candidate' => 'required',
-            'poll_id' => 'required'
+            'candidate' => 'required|numeric',
+            'poll' => 'required|numeric',
+            'event' => 'required|numeric'
         ]);
 
-        $poll = Poll::find($request->poll_id);
-        if ($poll) {
-            foreach ($poll->candidates as $key => $candidate) {
-                if ($candidate->winner == 1) {
-                    $candidate->update(['won'=> 0, 'via'=>'NULL']);
-                }
+        $poll = Poll::where(['id'=>$request->poll, 'event_id'=>$request->event])->first();
+        if ($poll != null) {
+            $poll->candidate_id = $request->candidate;
+            $update = $poll->save();
+            if ($update) {
+                return response()->json([
+                    'message' => 'Candidate has been declared winner.',
+                ], 200);
+            }else {
+                return response()->json([
+                    'message' => 'Oops! Something went wrong. Try again.',
+                ], 500);
             }
-            $get_winner = $poll->candidates->whereId($request->candidate)->first();
-            if ($get_winner) {
-                $declare_winner = $get_winner->update([
-                    'won' => 1,
-                    'via' => $request->via
-                ]);
-
-                if ($declare_winner) {
-                    return response()->json([
-                        'status' => 200,
-                        'message' => $get_winner +' has been delcared as winner.',
-                        'data' => $poll->candidates
-                    ],200);
-                }else {
-                    return response()->json([
-                        'status' => 200,
-                        'message' => 'Your action failed. Winner not decalred'
-                    ],200);
-                }
-            }
-            
         }
     }
 }

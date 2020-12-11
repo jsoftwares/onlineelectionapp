@@ -14,7 +14,7 @@
                         <tr>
                             <th>SN</th>
                             <th>Name</th>
-                            <th>Status</th>
+                            <!-- <th>Status</th> -->
                             <th>Action</th>                     
                         </tr>
                     </thead>
@@ -22,7 +22,7 @@
                         <tr>
                             <th>SN</th>
                             <th>Name</th>
-                            <th>Status</th>
+                            <!-- <th>Status</th> -->
                             <th>Action</th> 
                         </tr>
                     </tfoot>
@@ -41,11 +41,12 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>{{candidate.status === 0 ? 'NOT CLEARED' : 'CLEARED'}}</td>
-                            <td>
-                                <button @click="editCandidate(candidate)"  class='btn btn-outline-warning btn-sm'><i class="text-yellow fas fa-edit"></i></button>
-                                <button @click="makeWinner(candidate)" v-show="candidate.won==null"  class='btn btn-outline-success btn-sm'><i class="fas fa-trophy"></i></button>
+                            <!-- <td>{{candidate.status === 0 ? 'NOT CLEARED' : 'CLEARED'}}</td> -->
+                            <td v-if="candidate.id != pollWinner">
+                                <button @click="editCandidate(candidate)"  class="btn btn-outline-warning btn-sm"><i class="text-yellow fas fa-edit"></i></button>
+                                <button @click="declareWinner(candidate)"  class="btn btn-outline-success btn-sm"><i class="fas fa-trophy"></i></button>
                             </td>
+                            <td v-else class="text-center bg-success text-white h4 font-weight-bold">WINNER <i class="fas fa-trophy"></i></td>
                         </tr>
                     </tbody>
                 </table>
@@ -75,7 +76,8 @@ export default {
 
     data() {
         return {
-            'pollCandidates': this.poll.candidates
+            'pollCandidates': this.poll.candidates,
+            'pollWinner': this.poll.winner
         }
     },
 
@@ -84,12 +86,18 @@ export default {
             this.$emit('addNewCandidate', (this.poll));
         },
 
-        makeWinner(candidate)
+        declareWinner(candidate)
         {
             axios.post('/api/poll/declare-winner', {
-                'candidate_id': candidate.id,
-                'poll': candidate.poll_id
-            }).then( response ).catch( err => console.log(err));
+                'candidate': candidate.id,
+                'poll': candidate.poll_id,
+                'event': this.poll.event_id
+            }).then( response =>{
+                if (response.status == 200) {
+                    this.$parent.$emit('winnerDeclared', candidate.name);
+                    this.pollWinner = candidate.id
+                }
+            }).catch( err => console.log(err));
         },
         candidateVotePercentage(candidateVotesCount, pollVotesCount)
         {

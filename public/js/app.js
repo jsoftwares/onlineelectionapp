@@ -2237,6 +2237,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _custom__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../custom */ "./resources/js/custom.js");
 //
 //
 //
@@ -2422,6 +2423,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['event'],
   mounted: function mounted() {
@@ -2429,11 +2431,6 @@ __webpack_require__.r(__webpack_exports__);
       this.token = localStorage.exchange_confd.split('_')[1];
       this.accessChecker();
     }
-  },
-  computed: {// checkTotalCandidate: function($event){
-    //     this.
-    //     }
-    // }
   },
   data: function data() {
     return {
@@ -2448,7 +2445,7 @@ __webpack_require__.r(__webpack_exports__);
       'questionAlert': '',
       'baseURL': "http://127.0.0.1:8000",
       'lsKey': 'conf' + this.event.uid,
-      'btnText': 'CAsT VOTE',
+      'btnText': 'CAST VOTE',
       'disableBtn': false,
       'multiChoicePoll': {
         'checkedCandidates': Array()
@@ -2460,22 +2457,18 @@ __webpack_require__.r(__webpack_exports__);
       var _this = this;
 
       this.btnText = 'Sending...';
-      axios.post('/api/vote', {
+      _custom__WEBPACK_IMPORTED_MODULE_0__["HTTP"].post('/api/vote', {
         'poll_uid': poll.uid,
         'candidate': candidateId,
         'applc': this.attendee.uid,
         'misc': this.event.uid + '_' + this.event.id
       }).then(function (response) {
         if (response.data.status === 200) {
-          _this.alertType = 'alert-success';
-
-          _this.showAlert(response.data.message, _this.alertType, 4000);
+          _this.showAlert(response.data.message, 'alert-success', 4000);
 
           _this.btnText = 'CAST VOTE';
         } else {
-          _this.alertType = 'alert-danger';
-
-          _this.showAlert(response.data.message, _this.alertType, 4000);
+          _this.showAlert(response.data.message, 'alert-danger', 4000);
         }
       })["catch"](function (err) {
         return console.log('Something went wrong');
@@ -2487,20 +2480,27 @@ __webpack_require__.r(__webpack_exports__);
       if (this.multiChoicePoll.checkedCandidates.length == 0 || this.multiChoicePoll.checkedCandidates.length > poll.max_candidate) {
         this.showAlert('Sorry, you may select at most ' + poll.max_candidate + ' candidates.', 'alert-danger', 5000);
       } else {
+        this.btnText = 'Sending...';
         var data = new FormData();
         data.append('candidates', this.multiChoicePoll.checkedCandidates);
         data.append('poll_uid', poll.uid);
         data.append('applc', this.attendee.uid);
         data.append('misc', this.event.uid + '_' + this.event.id);
-        axios.post('/api/vote/multiple', data).then(function (response) {
+        _custom__WEBPACK_IMPORTED_MODULE_0__["HTTP"].post('/api/vote/multiple', data).then(function (response) {
           if (response.status == 200) {
             _this2.showAlert(response.data.message, 'alert-success', 5000);
+
+            _this2.btnText = 'CAST VOTE';
           } else {
             if (response.data.status == 403) {
+              _this2.btnText = 'CAST VOTE';
+
               _this2.showAlert(response.data.message, 'alert-danger', 5000);
 
               _this2.logout();
             } else {
+              _this2.btnText = 'CAST VOTE';
+
               _this2.showAlert(response.data.message, 'alert-danger', 5000);
             }
           }
@@ -2537,7 +2537,7 @@ __webpack_require__.r(__webpack_exports__);
       var _this4 = this;
 
       if (this.token != '') {
-        axios.post('/attendee/login', {
+        _custom__WEBPACK_IMPORTED_MODULE_0__["HTTP"].post('/api/attendee/login', {
           'event_id': this.event.id,
           'token': this.token
         }).then(function (response) {
@@ -2583,7 +2583,7 @@ __webpack_require__.r(__webpack_exports__);
     logout: function logout() {
       var _this5 = this;
 
-      axios.post('/attendee/logout', {
+      _custom__WEBPACK_IMPORTED_MODULE_0__["HTTP"].post('/api/attendee/logout', {
         'attendee': this.token,
         //we're not sending ID in Attendee Resource, so we use token which another unique field in votesessions 
         'event_id': this.event.id
@@ -2650,9 +2650,16 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['poll'],
-  mounted: function mounted() {},
+  mounted: function mounted() {
+    var _this = this;
+
+    this.$on('winnerDeclared', function (candidateName) {
+      _this.showAlert(candidateName + ' has been declared winner.', 'alert-success', 5000);
+    });
+  },
   components: {
     "poll-candidates": __webpack_require__(/*! ./children/PollCandidates.vue */ "./resources/js/components/children/PollCandidates.vue")["default"],
     "poll-votes": __webpack_require__(/*! ./children/PollVotes.vue */ "./resources/js/components/children/PollVotes.vue")["default"]
@@ -2660,19 +2667,22 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       message: '',
-      showMessage: false
+      showMessage: false,
+      className: ''
     };
   },
   methods: {
     createPoll: function createPoll() {},
-    showAlert: function showAlert(message, time) {
-      var _this = this;
+    showAlert: function showAlert(message, className, time) {
+      var _this2 = this;
 
       this.message = message;
       this.showMessage = true;
+      this.className = className;
       setInterval(function () {
-        _this.showMessage = false;
-        _this.message = '';
+        _this2.showMessage = false;
+        _this2.message = '';
+        _this2.className = '';
       }, time);
     }
   }
@@ -2689,8 +2699,6 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-//
-//
 //
 //
 //
@@ -3906,6 +3914,10 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -3977,6 +3989,18 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -4278,6 +4302,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['poll'],
   mounted: function mounted() {
@@ -4293,18 +4318,28 @@ __webpack_require__.r(__webpack_exports__);
   },
   data: function data() {
     return {
-      'pollCandidates': this.poll.candidates
+      'pollCandidates': this.poll.candidates,
+      'pollWinner': this.poll.winner
     };
   },
   methods: {
     addCandidate: function addCandidate(poll) {
       this.$emit('addNewCandidate', this.poll);
     },
-    makeWinner: function makeWinner(candidate) {
+    declareWinner: function declareWinner(candidate) {
+      var _this2 = this;
+
       axios.post('/api/poll/declare-winner', {
-        'candidate_id': candidate.id,
-        'poll': candidate.poll_id
-      }).then(response)["catch"](function (err) {
+        'candidate': candidate.id,
+        'poll': candidate.poll_id,
+        'event': this.poll.event_id
+      }).then(function (response) {
+        if (response.status == 200) {
+          _this2.$parent.$emit('winnerDeclared', candidate.name);
+
+          _this2.pollWinner = candidate.id;
+        }
+      })["catch"](function (err) {
         return console.log(err);
       });
     },
@@ -40036,7 +40071,7 @@ var render = function() {
         _vm._v(" "),
         _c(
           "div",
-          { staticClass: "tab-pane  fade", attrs: { id: "attendees" } },
+          { staticClass: "tab-pane fade", attrs: { id: "attendees" } },
           [_c("event-attendees", { attrs: { eventId: _vm.event.id } })],
           1
         )
@@ -40787,7 +40822,9 @@ var render = function() {
                                                           "btn btn-sm btn-success mb-2",
                                                         attrs: {
                                                           disabled:
-                                                            _vm.btnText == ""
+                                                            _vm.btnText ==
+                                                              "Sending..." ||
+                                                            _vm.disableBtn
                                                         },
                                                         on: {
                                                           click: function(
@@ -41282,6 +41319,15 @@ var render = function() {
     _c("div", { staticClass: "clearfix" }),
     _vm._v(" "),
     _c(
+      "a",
+      {
+        staticClass: "btn btn-primary btn-sm",
+        attrs: { href: "/event/" + _vm.poll.event_id }
+      },
+      [_vm._v("back")]
+    ),
+    _vm._v(" "),
+    _c(
       "div",
       {
         directives: [
@@ -41408,6 +41454,14 @@ var render = function() {
                 _c(
                   "div",
                   {
+                    directives: [
+                      {
+                        name: "show",
+                        rawName: "v-show",
+                        value: poll.candidates.length > 0,
+                        expression: "poll.candidates.length>0"
+                      }
+                    ],
                     staticClass: "card-header m-0 p-0",
                     attrs: { id: "headingOne" }
                   },
@@ -43957,14 +44011,14 @@ var render = function() {
           _c("div", { staticClass: "row" }, [
             _c(
               "h6",
-              { staticClass: "m-0 font-weight-bold text-primary col-md-8" },
+              { staticClass: "m-0 font-weight-bold text-primary col-md-9" },
               [_vm._v("All Attendees")]
             ),
             _vm._v(" "),
             _c(
               "div",
               {
-                staticClass: "btn-group float-right col-md-4",
+                staticClass: "btn-group float-right col-md-3 p-0",
                 attrs: {
                   role: "group",
                   "aria-label": "Button group with nested dropdown"
@@ -43974,7 +44028,7 @@ var render = function() {
                 _c(
                   "div",
                   {
-                    staticClass: "btn-group col-md-12",
+                    staticClass: "btn-group col-md-12 col-sm-12 p-0",
                     attrs: { role: "group" }
                   },
                   [
@@ -43984,7 +44038,7 @@ var render = function() {
                       "div",
                       {
                         staticClass: "dropdown-menu",
-                        attrs: { "aria-labelledby": "btnGroupDrop1" }
+                        attrs: { "aria-labelledby": "btnGroupDrop2" }
                       },
                       [
                         _c(
@@ -44110,9 +44164,9 @@ var staticRenderFns = [
       "button",
       {
         staticClass:
-          "d-none d-sm-inline-block mr-3 btn btn-sm btn-primary shadow-sm dropdown-toggle",
+          "d-none d-sm-inline-block btn btn-sm btn-primary m-0 shadow-sm dropdown-toggle",
         attrs: {
-          id: "btnGroupDrop1",
+          id: "btnGroupDrop2",
           type: "button",
           "data-toggle": "dropdown",
           "aria-haspopup": "true",
@@ -44121,7 +44175,7 @@ var staticRenderFns = [
       },
       [
         _c("i", { staticClass: "fas fa-users fa-sm text-white-50" }),
-        _vm._v(" Add Attendees\r\n                        ")
+        _vm._v(" Manage Attendees\r\n                        ")
       ]
     )
   },
@@ -44196,16 +44250,64 @@ var render = function() {
           ),
           _vm._v(" "),
           _c(
-            "button",
+            "div",
             {
-              staticClass: "btn btn-sm btn-primary m-0 float-right col-md-3",
-              on: {
-                click: function($event) {
-                  return _vm.createPoll()
-                }
+              staticClass: "btn-group float-right col-md-3 p-0",
+              attrs: {
+                role: "group",
+                "aria-label": "Button group with nested dropdown"
               }
             },
-            [_vm._v("New Poll")]
+            [
+              _c(
+                "div",
+                {
+                  staticClass: "btn-group col-md-12 col-sm-12 p-0",
+                  attrs: { role: "group" }
+                },
+                [
+                  _vm._m(0),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    {
+                      staticClass: "dropdown-menu col-md-12",
+                      attrs: { "aria-labelledby": "btnGroupDrop1" }
+                    },
+                    [
+                      _c(
+                        "a",
+                        {
+                          staticClass:
+                            "d-none d-sm-inline-block dropdown-item shadow-sm",
+                          attrs: { href: "#" },
+                          on: {
+                            click: function($event) {
+                              $event.preventDefault()
+                              return _vm.createPoll()
+                            }
+                          }
+                        },
+                        [_vm._v(" New Poll")]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "a",
+                        {
+                          staticClass:
+                            "d-none d-sm-inline-block dropdown-item shadow-sm",
+                          attrs: {
+                            href: "/event/pollscreen/" + _vm.eventId,
+                            target: "_blank"
+                          }
+                        },
+                        [_vm._v(" Live Result")]
+                      )
+                    ]
+                  )
+                ]
+              )
+            ]
           )
         ])
       ]),
@@ -44219,9 +44321,9 @@ var render = function() {
               attrs: { id: "dataTable-poll", width: "100%", cellspacing: "0" }
             },
             [
-              _vm._m(0),
-              _vm._v(" "),
               _vm._m(1),
+              _vm._v(" "),
+              _vm._m(2),
               _vm._v(" "),
               _c(
                 "tbody",
@@ -44285,6 +44387,29 @@ var render = function() {
   )
 }
 var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "button",
+      {
+        staticClass:
+          "d-none d-sm-inline-block btn btn-sm btn-primary m-0 shadow-sm dropdown-toggle",
+        attrs: {
+          id: "btnGroupDrop1",
+          type: "button",
+          "data-toggle": "dropdown",
+          "aria-haspopup": "true",
+          "aria-expanded": "false"
+        }
+      },
+      [
+        _c("i", { staticClass: "fas fa-poll fa-sm text-white-50" }),
+        _vm._v(" Manage Polls\n                    ")
+      ]
+    )
+  },
   function() {
     var _vm = this
     var _h = _vm.$createElement
@@ -44600,49 +44725,49 @@ var render = function() {
                       ])
                     ]),
                     _vm._v(" "),
-                    _c("td", [
-                      _vm._v(
-                        _vm._s(
-                          candidate.status === 0 ? "NOT CLEARED" : "CLEARED"
-                        )
-                      )
-                    ]),
-                    _vm._v(" "),
-                    _c("td", [
-                      _c(
-                        "button",
-                        {
-                          staticClass: "btn btn-outline-warning btn-sm",
-                          on: {
-                            click: function($event) {
-                              return _vm.editCandidate(candidate)
-                            }
-                          }
-                        },
-                        [_c("i", { staticClass: "text-yellow fas fa-edit" })]
-                      ),
-                      _vm._v(" "),
-                      _c(
-                        "button",
-                        {
-                          directives: [
+                    candidate.id != _vm.pollWinner
+                      ? _c("td", [
+                          _c(
+                            "button",
                             {
-                              name: "show",
-                              rawName: "v-show",
-                              value: candidate.won == null,
-                              expression: "candidate.won==null"
-                            }
-                          ],
-                          staticClass: "btn btn-outline-success btn-sm",
-                          on: {
-                            click: function($event) {
-                              return _vm.makeWinner(candidate)
-                            }
-                          }
-                        },
-                        [_c("i", { staticClass: "fas fa-trophy" })]
-                      )
-                    ])
+                              staticClass: "btn btn-outline-warning btn-sm",
+                              on: {
+                                click: function($event) {
+                                  return _vm.editCandidate(candidate)
+                                }
+                              }
+                            },
+                            [
+                              _c("i", {
+                                staticClass: "text-yellow fas fa-edit"
+                              })
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "button",
+                            {
+                              staticClass: "btn btn-outline-success btn-sm",
+                              on: {
+                                click: function($event) {
+                                  return _vm.declareWinner(candidate)
+                                }
+                              }
+                            },
+                            [_c("i", { staticClass: "fas fa-trophy" })]
+                          )
+                        ])
+                      : _c(
+                          "td",
+                          {
+                            staticClass:
+                              "text-center bg-success text-white h4 font-weight-bold"
+                          },
+                          [
+                            _vm._v("WINNER "),
+                            _c("i", { staticClass: "fas fa-trophy" })
+                          ]
+                        )
                   ])
                 }),
                 0
@@ -44668,8 +44793,6 @@ var staticRenderFns = [
         _vm._v(" "),
         _c("th", [_vm._v("Name")]),
         _vm._v(" "),
-        _c("th", [_vm._v("Status")]),
-        _vm._v(" "),
         _c("th", [_vm._v("Action")])
       ])
     ])
@@ -44683,8 +44806,6 @@ var staticRenderFns = [
         _c("th", [_vm._v("SN")]),
         _vm._v(" "),
         _c("th", [_vm._v("Name")]),
-        _vm._v(" "),
-        _c("th", [_vm._v("Status")]),
         _vm._v(" "),
         _c("th", [_vm._v("Action")])
       ])
@@ -58166,6 +58287,27 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_PollVotes_vue_vue_type_template_id_535632a5___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
 
 
+
+/***/ }),
+
+/***/ "./resources/js/custom.js":
+/*!********************************!*\
+  !*** ./resources/js/custom.js ***!
+  \********************************/
+/*! exports provided: HTTP */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HTTP", function() { return HTTP; });
+var HTTP = axios.create({
+  // baseURL: process.env.MIX_APP_URL,
+  headers: {
+    Accept: 'application/json',
+    Authorization: 'Bearer wNHGPf6QUt22z8qyGIh4l2OA3GJa0UP8DJwDADte',
+    ContentType: 'application/json'
+  }
+});
 
 /***/ }),
 

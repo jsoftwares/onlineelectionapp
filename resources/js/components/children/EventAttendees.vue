@@ -2,16 +2,20 @@
 <div>
     <div class="card shadow mb-4">
         <div class="card-header py-3">
+            <!-- <div class="row">
+                <h6 class="m-0 font-weight-bold text-primary col-md-9">All Polls</h6>
+                <button class="btn btn-sm btn-primary m-0 float-right col-md-3" @click="createPoll()">New Poll</button>
+            </div> -->
             <div class="row">
-                <h6 class="m-0 font-weight-bold text-primary col-md-8">All Attendees</h6>
+                <h6 class="m-0 font-weight-bold text-primary col-md-9">All Attendees</h6>
                 
                 <!-- Start Add Attendees -->
-                <div class="btn-group float-right col-md-4" role="group" aria-label="Button group with nested dropdown">
-                    <div class="btn-group col-md-12" role="group">
-                        <button id="btnGroupDrop1" type="button" class="d-none d-sm-inline-block mr-3 btn btn-sm btn-primary shadow-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-users fa-sm text-white-50"></i> Add Attendees
+                <div class="btn-group float-right col-md-3 p-0" role="group" aria-label="Button group with nested dropdown">
+                    <div class="btn-group col-md-12 col-sm-12 p-0" role="group">
+                        <button id="btnGroupDrop2" type="button" class="d-none d-sm-inline-block btn btn-sm btn-primary m-0 shadow-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-users fa-sm text-white-50"></i> Manage Attendees
                         </button>
-                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop2">
                             <a href="#" @click.prevent="importAttendees()" class="d-none d-sm-inline-block dropdown-item shadow-sm"> Import Attendees</a>
                             <a href="#" @click.prevent="addAttendee()" class="d-none d-sm-inline-block dropdown-item shadow-sm"> Single Attendee</a>
                             <a href="#" @click.prevent="GenDispToken()" class="d-none d-sm-inline-block dropdown-item shadow-sm"> Send Tokens</a>

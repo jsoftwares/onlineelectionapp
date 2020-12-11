@@ -106,7 +106,7 @@
                                                     </div>
                                                     <div class="media-body">
                                                         <h6 class="media-heading font-weight-bold">{{candidate.name}}</h6>
-                                                        <button class="btn btn-sm btn-success mb-2" @click="castVote(poll, candidate.id, event)" :disabled="btnText==''">
+                                                        <button class="btn btn-sm btn-success mb-2" @click="castVote(poll, candidate.id, event)" :disabled="btnText=='Sending...' || disableBtn">
                                                             <div v-show="btnText=='Sending...'" class="spinner-border spinner-border-sm" role="status">
                                                                 <span class="sr-only">Loading...</span>
                                                             </div>
@@ -184,6 +184,7 @@
 </template>
 
 <script>
+import {HTTP} from '../custom';
 
 export default {
     
@@ -194,13 +195,6 @@ export default {
             this.token = localStorage.exchange_confd.split('_')[1];
             this.accessChecker();
         }
-    },
-
-    computed: {
-        // checkTotalCandidate: function($event){
-        //     this.
-        //     }
-        // }
     },
 
     data()
@@ -217,7 +211,7 @@ export default {
             'questionAlert': '',
             'baseURL': process.env.MIX_APP_URL,
             'lsKey': 'conf'+this.event.uid,
-            'btnText': 'CAsT VOTE',
+            'btnText': 'CAST VOTE',
             'disableBtn': false,
             'multiChoicePoll': {
                 'checkedCandidates': Array()
@@ -229,7 +223,7 @@ export default {
         castVote(poll, candidateId, event)
         {
             this.btnText = 'Sending...';
-            axios.post('/api/vote', {
+            HTTP.post('/api/vote', {
                 'poll_uid': poll.uid,
                 'candidate': candidateId,
                 'applc': this.attendee.uid,
@@ -237,13 +231,11 @@ export default {
             })
             .then( response => {
                 if (response.data.status === 200) {
-                    this.alertType = 'alert-success';
-                    this.showAlert(response.data.message, this.alertType, 4000);
+                    this.showAlert(response.data.message, 'alert-success', 4000);
                     this.btnText = 'CAST VOTE';
                 }
                 else{
-                    this.alertType = 'alert-danger';
-                    this.showAlert(response.data.message, this.alertType, 4000);
+                    this.showAlert(response.data.message, 'alert-danger', 4000);
                 }
             }).catch( err => console.log('Something went wrong'));
         },
@@ -253,20 +245,24 @@ export default {
             if (this.multiChoicePoll.checkedCandidates.length == 0 || this.multiChoicePoll.checkedCandidates.length > poll.max_candidate) {
                 this.showAlert('Sorry, you may select at most '+poll.max_candidate+' candidates.', 'alert-danger', 5000);
             }else{
+                this.btnText = 'Sending...';
                 const data = new FormData();
                 data.append('candidates', this.multiChoicePoll.checkedCandidates);
                 data.append('poll_uid', poll.uid);
                 data.append('applc', this.attendee.uid,);
                 data.append('misc', this.event.uid+'_'+this.event.id);
-                axios.post('/api/vote/multiple', data)
+                HTTP.post('/api/vote/multiple', data)
                 .then(response => {
                     if (response.status == 200) {
                         this.showAlert(response.data.message, 'alert-success', 5000);
+                        this.btnText = 'CAST VOTE';
                     }else{
                         if(response.data.status == 403){
+                            this.btnText = 'CAST VOTE';
                             this.showAlert(response.data.message, 'alert-danger', 5000);
                             this.logout();
                         }else{
+                            this.btnText = 'CAST VOTE';
                             this.showAlert(response.data.message, 'alert-danger', 5000);
                         }
                     }
@@ -306,7 +302,7 @@ export default {
         accessChecker(){
 
             if (this.token != '') {
-                axios.post('/attendee/login', {
+                HTTP.post('/api/attendee/login', {
                     'event_id':this.event.id, 
                     'token':this.token
                 })
@@ -357,7 +353,7 @@ export default {
         },
 
         logout(){
-            axios.post('/attendee/logout', {
+            HTTP.post('/api/attendee/logout', {
                 'attendee': this.token, //we're not sending ID in Attendee Resource, so we use token which another unique field in votesessions 
                 'event_id': this.event.id
             })

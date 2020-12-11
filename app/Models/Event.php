@@ -16,7 +16,7 @@ class Event extends Model
 
     public function polls()
     {
-        return $this->hasMany(Poll::class);
+        return $this->hasMany(Poll::class)->orderBy('id', 'desc');;
     }
 
     public function candidates()
